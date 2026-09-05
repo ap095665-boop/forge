@@ -540,7 +540,6 @@ select.text-input { background: #080c14; }
   </div>
   <div style="display:flex;gap:8px;" class="hud-element">
     <button class="stats-pill" id="btnOpenSearch" style="cursor:pointer;">SEARCH</button>
-    <div class="stats-pill"><span class="dot"></span><span id="postCountLabel">0 INSCRIBED</span></div>
     <button class="create-btn" id="btnOpenCreator">+ INSCRIBE</button>
   </div>
 </div>
@@ -806,7 +805,7 @@ function createCardElement(p, isPreview = false) {
         ${p.subtitle ? `<div class="kinetic-subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><button type="button" class="read-more-inline" aria-label="Read full subtitle">READ MORE ↗</button></div>` : ''}
         ${u ? `<a class="visit-btn" href="${esc(u)}" target="_blank" rel="noopener">VISIT SOURCE ↗</a>` : ''}
       </div>
-      <button class="post-share-btn" aria-label="Share post" title="Share post" onclick="sharePost('${p.id}')">↗</button>
+      <button class="post-share-btn" aria-label="Share post" title="Share post" type="button" onclick="sharePost('${esc(p.id || '')}')">↗</button>
     </div>
   `;
   const readMore = card.querySelector('.read-more-inline');
@@ -819,6 +818,48 @@ function createCardElement(p, isPreview = false) {
   }
   card._accent = p.accent_word || p.accentWord || '';
   return card;
+}
+
+
+// WORKING SHARE BUTTON — preserves the existing visual arrow exactly.
+async function sharePost(id) {
+  if (!id) return;
+
+  const shareUrl = new URL(location.href);
+  shareUrl.search = '';
+  shareUrl.hash = '';
+  shareUrl.searchParams.set('p', id);
+  const href = shareUrl.href;
+
+  try {
+    if (typeof navigator.share === 'function') {
+      await navigator.share({ title: 'TYPE FORGE', url: href });
+      return;
+    }
+
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(href);
+      toast('PERMALINK COPIED');
+      return;
+    }
+
+    const ta = document.createElement('textarea');
+    ta.value = href;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    const copied = document.execCommand('copy');
+    ta.remove();
+    if (copied) toast('PERMALINK COPIED');
+  } catch (err) {
+    if (err && err.name !== 'AbortError') {
+      console.error('Share failed:', err);
+      toast('SHARE FAILED');
+    }
+  }
 }
 
 function scramble(h, a) {
@@ -850,7 +891,7 @@ let cursorId = null;
 let hasMore = true;
 
 // PUBLIC FEED: Cloudflare static JSON only. Supabase remains for posting.
-const STATIC_FEED_BASE = 'https://typeforge-feed.pages.dev';
+const STATIC_FEED_BASE = 'https://typeforge-feed-worker.ap095665.workers.dev';
 let feedManifest = null;
 let feedCardIndex = null;
 let feedShardCache = new Map();
@@ -877,7 +918,7 @@ function trayEndState() {
 
 async function loadFeedShard(shardFile) {
   if (feedShardCache.has(shardFile)) return feedShardCache.get(shardFile);
-  const res = await fetch(`${STATIC_FEED_BASE}/${encodeURIComponent(shardFile)}`, { cache: 'no-store' });
+  const res = await fetch(`${STATIC_FEED_BASE}/${encodeURIComponent(shardFile)}`);
   if (!res.ok) throw new Error(`Feed shard ${shardFile} failed (${res.status})`);
   const data = await res.json();
   if (!Array.isArray(data)) throw new Error(`Invalid feed shard: ${shardFile}`);
@@ -891,8 +932,8 @@ async function loadFeedShard(shardFile) {
 async function initStaticFeed() {
   if (feedManifest) return;
   const [manifestRes, indexRes] = await Promise.all([
-    fetch(`${STATIC_FEED_BASE}/manifest.json`, { cache: 'no-store' }),
-    fetch(`${STATIC_FEED_BASE}/card-index.json`, { cache: 'no-store' })
+    fetch(`${STATIC_FEED_BASE}/manifest.json`),
+    fetch(`${STATIC_FEED_BASE}/card-index.json`)
   ]);
   if (!manifestRes.ok) throw new Error(`Feed manifest failed (${manifestRes.status})`);
   if (!indexRes.ok) throw new Error(`Feed index failed (${indexRes.status})`);
