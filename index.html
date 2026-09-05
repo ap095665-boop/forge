@@ -37,8 +37,8 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   pointer-events: none;
 }
 .hud-element { pointer-events: auto; }
-.brand { display: flex; align-items: center; gap: 8px; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 0.5px; }
-.brand svg { width: 22px; height: 22px; filter: drop-shadow(0 0 6px var(--cyan)); }
+.brand { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; }
+.brand svg { width: 24px; height: 24px; filter: drop-shadow(0 0 6px var(--cyan)); }
 .stats-pill {
   display: flex; align-items: center; gap: 7px; font-family: 'JetBrains Mono', monospace;
   font-size: 11px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 20px;
@@ -62,23 +62,26 @@ input, select, textarea { color: var(--text); background: transparent; border: n
 }
 
 .active-card-slot {
-  width: 100%; max-width: 440px; height: 100%;
-  display: flex; align-items: flex-end; justify-content: center;
-  position: relative;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
   contain: layout style;
 }
 
 .feed-card {
-  width: 100%;
-  max-width: 440px;
-  background: var(--panel-solid);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.85);
-  display: flex;
-  flex-direction: column;
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  display: block;
   will-change: transform, opacity;
   touch-action: none;
   contain: layout paint style;
@@ -100,12 +103,7 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease !important;
 }
 
-.card-meta {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 16px; border-bottom: 1px solid var(--line);
-  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--dim);
-  flex-shrink: 0;
-}
+.card-meta { display: none !important; }
 .badge-immutable { color: var(--good); font-weight: 700; display: flex; align-items: center; gap: 6px; }
 .badge-immutable::before { content:''; width: 5px; height: 5px; background: var(--good); border-radius: 50%; box-shadow: 0 0 6px var(--good); }
 
@@ -113,8 +111,9 @@ input, select, textarea { color: var(--text); background: transparent; border: n
 .card-stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 9/16;
-  max-height: calc(100dvh - 120px);
+  height: 100dvh;
+  aspect-ratio: auto;
+  max-height: none;
   overflow: hidden;
   contain: layout paint style;
   display: flex;
@@ -171,11 +170,57 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   background: rgba(0,0,0,.12);
   box-shadow: 0 0 10px var(--card-accent-20);
 }
-.card-info {
-  padding: 10px 16px; border-top: 1px solid var(--line);
-  display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
-  flex-shrink: 0;
+
+.card-info { display: none !important; }
+
+/* TRUE FULL-SCREEN POST — no outer card, no collapsed card shell */
+#activeSlot > .feed-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
 }
+
+#activeSlot > .feed-card > .card-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  max-height: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+.post-share-btn {
+  position: absolute;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 20;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  font: 700 20px/1 'JetBrains Mono', monospace;
+}
+
+.post-share-btn:active {
+  transform: scale(.94);
+}
+
 
 /* =========================================================================
    MINIMAL END-OF-STREAM INDICATOR
@@ -280,54 +325,56 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   0%,100% { transform: scale(.9); opacity:.65; }
   50% { transform: scale(1.12); opacity:1; }
 }
-.bg-orbit {
+ .bg-orbit {
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 50%, var(--card-accent-40) 0 2.5%, var(--card-accent-20) 3% 5%, transparent 7%),
-    radial-gradient(circle at 50% 50%, transparent 0 18%, var(--card-accent-15) 18.2% 18.6%, transparent 19%),
-    radial-gradient(circle at 50% 50%, transparent 0 38%, var(--card-accent2-20) 38.2% 38.7%, transparent 39%),
-    radial-gradient(circle at 50% 50%, transparent 0 58%, var(--card-accent-20) 58.2% 58.6%, transparent 59%),
-    radial-gradient(circle at 50% 50%, transparent 0 78%, var(--card-accent2-20) 78.2% 78.6%, transparent 79%),
-    conic-gradient(from 0deg at 50% 50%, transparent 0deg, var(--card-accent-20) 18deg, transparent 42deg, transparent 92deg, var(--card-accent2-20) 112deg, transparent 142deg, transparent 218deg, var(--card-accent-15) 238deg, transparent 270deg, transparent 360deg);
-  animation: orbitField 20s linear infinite;
+    radial-gradient(circle at 50% 50%, var(--card-accent-20) 0 2%, transparent 9%),
+    radial-gradient(ellipse at 50% 50%, transparent 0 27%, var(--card-accent-15) 27.5% 28%, transparent 28.7%);
+  animation: orbitField 24s linear infinite;
 }
+
 .bg-orbit::before,
 .bg-orbit::after {
   content: '';
   position: absolute;
-  left: 50%; top: 50%;
-  width: 78%; height: 32%;
+  left: 50%;
+  top: 50%;
+  width: 52%;
+  height: 18%;
   border: 1px solid var(--card-accent-20);
   border-radius: 50%;
   transform-origin: center;
-  box-shadow: 0 0 18px var(--card-accent-15), inset 0 0 18px var(--card-accent-15);
-  opacity: .8;
+  box-shadow: 0 0 10px var(--card-accent-15);
+  opacity: .62;
 }
+
 .bg-orbit::before {
-  transform: translate(-50%, -50%) rotate(28deg);
-  animation: orbitRingA 7s ease-in-out infinite alternate;
+  transform: translate(-50%, -50%) rotate(22deg);
+  animation: orbitRingA 14s ease-in-out infinite alternate;
 }
+
 .bg-orbit::after {
-  width: 58%; height: 82%;
+  width: 18%;
+  height: 52%;
   border-color: var(--card-accent2-20);
-  box-shadow: 0 0 22px var(--card-accent2-20), inset 0 0 16px var(--card-accent2-20);
-  transform: translate(-50%, -50%) rotate(-32deg);
-  animation: orbitRingB 9s ease-in-out infinite alternate;
+  box-shadow: 0 0 10px var(--card-accent2-15);
+  transform: translate(-50%, -50%) rotate(-22deg);
+  animation: orbitRingB 16s ease-in-out infinite alternate;
 }
+
 @keyframes orbitField {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.035); }
-  100% { transform: rotate(360deg) scale(1); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
+
 @keyframes orbitRingA {
-  0% { transform: translate(-50%, -50%) rotate(18deg) scale(1); opacity: .48; }
-  50% { transform: translate(-50%, -50%) rotate(82deg) scale(1.08); opacity: .9; }
-  100% { transform: translate(-50%, -50%) rotate(145deg) scale(.96); opacity: .58; }
+  0% { transform: translate(-50%, -50%) rotate(22deg); opacity: .42; }
+  100% { transform: translate(-50%, -50%) rotate(42deg); opacity: .66; }
 }
+
 @keyframes orbitRingB {
-  0% { transform: translate(-50%, -50%) rotate(-38deg) scale(.96); opacity: .42; }
-  50% { transform: translate(-50%, -50%) rotate(38deg) scale(1.06); opacity: .82; }
-  100% { transform: translate(-50%, -50%) rotate(118deg) scale(.98); opacity: .5; }
+  0% { transform: translate(-50%, -50%) rotate(-22deg); opacity: .36; }
+  100% { transform: translate(-50%, -50%) rotate(2deg); opacity: .58; }
 }
 
 .card-stage::after {
@@ -390,25 +437,9 @@ input, select, textarea { color: var(--text); background: transparent; border: n
 @keyframes driftOnce { 0% { transform: translate3d(0, 24px, 0); opacity: 0; } 100% { transform: translate3d(0, 0, 0); opacity: 1; } }
 
 /* ACTIONS */
-.card-actions {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 16px; background: rgba(255,255,255,.02); border-top: 1px solid var(--line);
-  gap: 10px; flex-wrap: wrap; flex-shrink: 0;
-}
+.card-actions { display: none !important; }
 .card-interactive-left, .card-socials { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .card-socials { margin-left: auto; }
-.voice-pill, .link-pill, .social-btn {
-  display: flex; align-items: center; gap: 6px; border-radius: 20px;
-  font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 5px 10px;
-}
-.voice-pill { border: 1px solid var(--cyan); color: var(--cyan); background: rgba(72,232,255,.08); }
-.link-pill, .social-btn { border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
-.social-btn.liked { border-color: var(--danger); color: var(--danger); }
-.social-btn:disabled { opacity: .45; cursor: not-allowed; }
-.voice-wave { display: flex; gap: 2px; }
-.wave-bar { width: 2px; height: 4px; background: currentColor; }
-.voice-pill.playing .wave-bar { animation: wv .6s infinite alternate; }
-@keyframes wv { to { height: 11px; } }
 
 /* PREVIEW DRAWER ARCHITECTURE */
 .preview-phone {
@@ -502,9 +533,10 @@ select.text-input { background: #080c14; }
 <body>
 
 <div id="topbar">
-  <div class="brand hud-element">
-    <svg viewBox="0 0 24 24" fill="none"><path d="M4 6H20M12 6V19M8 19H16" stroke="#48e8ff" stroke-width="2.2" stroke-linecap="round"/></svg>
-    TYPE FORGE <span style="font-family:'JetBrains Mono';font-size:9px;color:var(--muted);margin-left:4px;">KINETIC DECK</span>
+  <div class="brand hud-element" aria-label="TYPE FORGE" title="TYPE FORGE">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 6H20M12 6V19M8 19H16" stroke="#48e8ff" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
   </div>
   <div style="display:flex;gap:8px;" class="hud-element">
     <button class="stats-pill" id="btnOpenSearch" style="cursor:pointer;">SEARCH</button>
@@ -684,7 +716,6 @@ function headline(h, a) {
 }
 
 const own = new Set(JSON.parse(localStorage.getItem('tf-own') || '[]'));
-const liked = new Set(JSON.parse(localStorage.getItem('tf-liked') || '[]'));
 function save(k, s) { localStorage.setItem(k, JSON.stringify([...s])); }
 
 /* =========================================================================
@@ -767,35 +798,15 @@ function createCardElement(p, isPreview = false) {
   })) card.style.setProperty(k, v);
 
   card.innerHTML = `
-    <div class="card-meta"><span class="badge-immutable">PERMANENT RECORD</span><span>${esc(id)} · IMMUTABLE</span></div>
     <div class="card-stage anim-${esc(p.anim || 'kinetic_slam')}">
       <div class="bg-layer ${b.cls}"></div>
       <div class="kinetic-header"><div class="kinetic-badge">${esc(p.tagline || 'DECLARATION')}</div></div>
       <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
       <div class="kinetic-footer">
         ${p.subtitle ? `<div class="kinetic-subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><button type="button" class="read-more-inline" aria-label="Read full subtitle">READ MORE ↗</button></div>` : ''}
-        ${u ? `<a class="visit-btn" href="${esc(u)}" target="_blank" rel="noopener" onclick="trackClick('${p.id}')">VISIT SOURCE ↗</a>` : ''}
+        ${u ? `<a class="visit-btn" href="${esc(u)}" target="_blank" rel="noopener">VISIT SOURCE ↗</a>` : ''}
       </div>
-    </div>
-    <div class="card-actions">
-      <div class="card-interactive-left">
-        ${p.audio_url ? `
-          <button class="voice-pill" onclick="toggleVoice('${p.id}',this)">
-            ▶ <span>VOICE NOTE</span><span class="voice-wave"><i class="wave-bar"></i><i class="wave-bar"></i><i class="wave-bar"></i></span>
-            <audio src="${esc(p.audio_url)}" preload="none"></audio>
-          </button>
-        ` : ''}
-      </div>
-      <div class="card-socials">
-        <button class="social-btn" ${own.has(p.id) ? 'disabled title="You cannot like your own inscription"' : ''} onclick="handleLike('${p.id}',this)">
-          ♡ <span>${p.likes_count || 0}</span>
-        </button>
-        <button class="social-btn" onclick="sharePost('${p.id}')">↗</button>
-      </div>
-    </div>
-    <div class="card-info">
-      <span>STYLE: ${esc((p.anim || 'kinetic_slam').replaceAll('_', ' ').toUpperCase())}</span>
-      <span>THEME: ${t.name}</span>
+      <button class="post-share-btn" aria-label="Share post" title="Share post" onclick="sharePost('${p.id}')">↗</button>
     </div>
   `;
   const readMore = card.querySelector('.read-more-inline');
@@ -807,7 +818,6 @@ function createCardElement(p, isPreview = false) {
     readMore.onclick = () => openSubtitleReader(p.subtitle);
   }
   card._accent = p.accent_word || p.accentWord || '';
-  if (liked.has(p.id) && !own.has(p.id)) card.querySelector('.social-btn')?.classList.add('liked');
   return card;
 }
 
@@ -835,8 +845,19 @@ function scramble(h, a) {
    ========================================================================= */
 let currentBatch = [];
 let activeBatchIndex = -1;
-let cursor = null;
+let cursorCreatedAt = null;
+let cursorId = null;
 let hasMore = true;
+
+// PUBLIC FEED: Cloudflare static JSON only. Supabase remains for posting.
+const STATIC_FEED_BASE = 'https://typeforge-feed.pages.dev';
+let feedManifest = null;
+let feedCardIndex = null;
+let feedShardCache = new Map();
+let feedCards = [];
+let feedCardMap = new Map();
+let feedPosition = 0;
+let feedOffset = 0;
 let isFetching = false;
 let currentCardNode = null;
 let isTransitioning = false;
@@ -854,44 +875,73 @@ function trayEndState() {
   document.getElementById('bottomDeckTray').classList.add('end-state');
 }
 
+async function loadFeedShard(shardFile) {
+  if (feedShardCache.has(shardFile)) return feedShardCache.get(shardFile);
+  const res = await fetch(`${STATIC_FEED_BASE}/${encodeURIComponent(shardFile)}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Feed shard ${shardFile} failed (${res.status})`);
+  const data = await res.json();
+  if (!Array.isArray(data)) throw new Error(`Invalid feed shard: ${shardFile}`);
+  feedShardCache.set(shardFile, data);
+  for (const card of data) {
+    if (card && card.id) feedCardMap.set(card.id, card);
+  }
+  return data;
+}
+
+async function initStaticFeed() {
+  if (feedManifest) return;
+  const [manifestRes, indexRes] = await Promise.all([
+    fetch(`${STATIC_FEED_BASE}/manifest.json`, { cache: 'no-store' }),
+    fetch(`${STATIC_FEED_BASE}/card-index.json`, { cache: 'no-store' })
+  ]);
+  if (!manifestRes.ok) throw new Error(`Feed manifest failed (${manifestRes.status})`);
+  if (!indexRes.ok) throw new Error(`Feed index failed (${indexRes.status})`);
+  feedManifest = await manifestRes.json();
+  feedCardIndex = await indexRes.json();
+  if (!Array.isArray(feedManifest.shards)) throw new Error('Invalid feed manifest');
+  if (!feedCardIndex || typeof feedCardIndex !== 'object') throw new Error('Invalid feed card index');
+}
+
 async function loadNextTriad(autoPresentFirst = true) {
   if (isFetching || !hasMore) return;
   isFetching = true;
   btnNextSwipe.textContent = `SYNCING...`;
 
   try {
-    let q = sbClient
-      .from('kinetic_wall')
-      .select('*', { count: cursor ? undefined : 'exact' })
-      .order('created_at', { ascending: false })
-      .limit(3);
+    await initStaticFeed();
 
-    if (cursor) q = q.lt('created_at', cursor);
+    while (feedPosition < feedManifest.shards.length) {
+      const shardMeta = feedManifest.shards[feedPosition];
+      const shard = await loadFeedShard(shardMeta.file);
 
-    let { data, error, count } = await q;
-    if (error) throw error;
+      if (feedOffset >= shard.length) {
+        feedPosition += 1;
+        feedOffset = 0;
+        continue;
+      }
 
-    if (count !== null) {
-      document.getElementById('postCountLabel').textContent = `${count} INSCRIBED`;
+      const nextThree = shard.slice(feedOffset, feedOffset + 3);
+      feedOffset += nextThree.length;
+
+      const seen = new Set(currentBatch.map(x => x?.id).filter(Boolean));
+      currentBatch = nextThree.filter(x => x?.id && !seen.has(x.id));
+
+      if (currentBatch.length) {
+        hasMore = feedOffset < shard.length || feedPosition < feedManifest.shards.length - 1;
+        activeBatchIndex = -1;
+        if (autoPresentFirst) presentCard(0);
+        return;
+      }
     }
 
-    if (!data || data.length === 0) {
-      hasMore = false;
-      trayEndState();
-      return;
-    }
-
-    currentBatch = data;
-    cursor = data[data.length - 1].created_at;
-    activeBatchIndex = -1;
-    if (autoPresentFirst) {
-      presentCard(0);
-    }
-  } catch (err) {
-    console.error('Batch fetch error:', err);
-    toast('Error loading inscription batch');
+    hasMore = false;
+    if (!currentCardNode) toast('No more inscriptions');
+  } catch (e) {
+    console.error('Static feed load failed:', e);
+    toast('Feed unavailable — please retry');
   } finally {
     isFetching = false;
+    btnNextSwipe.textContent = 'NEXT INSCRIPTION';
   }
 }
 
@@ -1012,65 +1062,8 @@ window.addEventListener('wheel', e => {
 btnNextSwipe.addEventListener('click', dismissActiveAndAdvance);
 
 /* =========================================================================
-   6. SOCIAL INTERACTIONS
+   6. SHARE
    ========================================================================= */
-async function handleLike(id, b) {
-  if (own.has(id)) { toast('You cannot like your own inscription'); return; }
-  if (liked.has(id)) return;
-  b.disabled = true;
-  let { error } = await sbClient.rpc('increment_likes', { target_id: id });
-  if (error) { b.disabled = false; toast('Unable to record like'); return; }
-  b.classList.add('liked');
-  b.querySelector('span').textContent = +b.querySelector('span').textContent + 1;
-  liked.add(id);
-  save('tf-liked', liked);
-}
-
-async function sharePost(id) {
-  const permalink = new URL(location.href);
-  permalink.search = '';
-  permalink.hash = '';
-  permalink.searchParams.set('p', id);
-  try {
-    await navigator.clipboard.writeText(permalink.href);
-    toast('✦ PERMALINK COPIED');
-  } catch {
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = permalink.href;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-      toast('✦ PERMALINK COPIED');
-    } catch {
-      toast(permalink.href);
-    }
-  }
-}
-
-function trackClick(id) {
-  sbClient.rpc('increment_clicks', { target_id: id }).catch(() => {});
-}
-
-let playing = null;
-function toggleVoice(id, b) {
-  let a = b.querySelector('audio');
-  if (playing && playing !== a) playing.pause();
-  if (a.paused) {
-    a.play().then(() => {
-      playing = a;
-      b.classList.add('playing');
-      sbClient.rpc('increment_listens', { target_id: id }).catch(() => {});
-    }).catch(() => toast('Audio playback blocked'));
-  } else {
-    a.pause();
-    b.classList.remove('playing');
-  }
-}
-
 /* =========================================================================
    7. CREATOR DRAWER & PREVIEW
    ========================================================================= */
@@ -1181,7 +1174,7 @@ document.getElementById('btnCommit').onclick = async () => {
       currentCardNode = null;
     }
 
-    currentBatch.unshift(created);
+    currentBatch = [created, ...currentBatch].slice(0, 3);
     activeBatchIndex = 0;
     updateBottomTrayUI();
     presentCard(0);
@@ -1211,35 +1204,73 @@ document.getElementById('btnCommit').onclick = async () => {
 const searchDrawer = document.getElementById('searchDrawer');
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
+let searchRequestToken = 0;
 
 document.getElementById('btnOpenSearch').onclick = () => searchDrawer.classList.add('open');
 document.getElementById('btnCloseSearch').onclick = () => searchDrawer.classList.remove('open');
 
 searchInput.oninput = async () => {
-  let q = searchInput.value.trim();
+  const requestToken = ++searchRequestToken;
+  let q = searchInput.value.trim().toLowerCase();
   if (!q) return searchResults.replaceChildren();
-  q = q.replace(/[%(),]/g, ' ').trim();
+  q = q.replace(/[%,()]/g, ' ').trim();
   if (!q) return searchResults.replaceChildren();
-  let { data } = await sbClient.from('kinetic_wall').select('id,serial_no,headline,tagline').or(`headline.ilike.%${q}%,subtitle.ilike.%${q}%,tagline.ilike.%${q}%`).limit(8);
-  searchResults.innerHTML = (data || []).map(p =>
-    `<button class="text-input" style="padding:8px 0;text-align:left;border-bottom:1px solid var(--line);" onclick="jumpToCard('${p.id}')">#${p.serial_no} · ${esc(p.headline)}</button>`
-  ).join('');
+
+  try {
+    await initStaticFeed();
+    const results = [];
+    for (const meta of feedManifest.shards) {
+      const shard = await loadFeedShard(meta.file);
+      for (const p of shard) {
+        const haystack = `${p.headline || ''}\n${p.subtitle || ''}\n${p.tagline || ''}`.toLowerCase();
+        if (haystack.includes(q)) {
+          results.push(p);
+          if (results.length >= 8) break;
+        }
+      }
+      if (results.length >= 8) break;
+    }
+    if (requestToken !== searchRequestToken) return;
+    searchResults.innerHTML = results.map(p =>
+      `<button class="text-input" style="padding:8px 0;text-align:left;border-bottom:1px solid var(--line);" onclick="jumpToCard('${p.id}')">#${p.serial_no} · ${esc(p.headline)}</button>`
+    ).join('');
+  } catch (e) {
+    if (requestToken === searchRequestToken) {
+      console.error('Static search failed:', e);
+      searchResults.innerHTML = '<div style="opacity:.6;padding:10px 0">Search unavailable</div>';
+    }
+  }
 };
 
 async function jumpToCard(id) {
   searchDrawer.classList.remove('open');
-  let { data } = await sbClient.from('kinetic_wall').select('*').eq('id', id).maybeSingle();
-  if (data) {
-    const u = new URL(location.href);
-    u.search = '';
-    u.hash = '';
-    u.searchParams.set('p', id);
-    history.pushState({ type: 'typeforge-card', id }, '', u.href);
-    if (currentCardNode) currentCardNode.remove();
-    currentBatch = [data];
-    activeBatchIndex = 0;
-    updateBottomTrayUI();
-    presentCard(0);
+  try {
+    await initStaticFeed();
+    let data = feedCardMap.get(id);
+    if (!data) {
+      const shardFile = feedCardIndex[id];
+      if (shardFile) data = (await loadFeedShard(shardFile)).find(x => x.id === id);
+    }
+    if (data) {
+      const u = new URL(location.href);
+      u.search = '';
+      u.hash = '';
+      u.searchParams.set('p', id);
+      history.pushState({ type: 'typeforge-card', id }, '', u.href);
+      if (currentCardNode) currentCardNode.remove();
+      currentBatch = [data];
+      cursorCreatedAt = data.created_at || null;
+      cursorId = data.id || null;
+      hasMore = true;
+      activeBatchIndex = 0;
+      updateBottomTrayUI();
+      presentCard(0);
+    } else {
+      toast('Inscription not found');
+    }
+  } catch (e) {
+    console.error('Static card lookup failed:', e);
+    toast('Inscription unavailable');
   }
 }
 
@@ -1251,24 +1282,42 @@ addEventListener('DOMContentLoaded', async () => {
   let id = params.get('p');
   if (!id) id = location.hash.match(/^#p=(.+)$/)?.[1] || null;
 
-  if (id) {
-    const { data } = await sbClient.from('kinetic_wall').select('*').eq('id', id).maybeSingle();
-    if (data) {
-      if (location.hash) {
-        const clean = new URL(location.href);
-        clean.hash = '';
-        clean.searchParams.set('p', id);
-        history.replaceState({ type: 'typeforge-card', id }, '', clean.href);
+  try {
+    await initStaticFeed();
+
+    if (id) {
+      let data = feedCardMap.get(id);
+      if (!data) {
+        const shardFile = feedCardIndex[id];
+        if (shardFile) data = (await loadFeedShard(shardFile)).find(x => x.id === id);
       }
-      currentBatch = [data];
-      activeBatchIndex = 0;
-      updateBottomTrayUI();
-      presentCard(0);
-      return;
+      if (data) {
+        if (location.hash) {
+          const clean = new URL(location.href);
+          clean.hash = '';
+          clean.searchParams.set('p', id);
+          history.replaceState({ type: 'typeforge-card', id }, '', clean.href);
+        }
+        currentBatch = [data];
+        cursorCreatedAt = data.created_at || null;
+        cursorId = data.id || null;
+        hasMore = true;
+        activeBatchIndex = 0;
+        updateBottomTrayUI();
+        presentCard(0);
+        return;
+      }
+      toast('Inscription not found');
     }
-    toast('Inscription not found');
+
+    feedPosition = 0;
+    feedOffset = 0;
+    currentBatch = [];
+    loadNextTriad(true);
+  } catch (e) {
+    console.error('Static feed bootstrap failed:', e);
+    toast('Feed unavailable — please retry');
   }
-  loadNextTriad(true);
 });
 </script>
 </body>
