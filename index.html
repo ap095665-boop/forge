@@ -556,7 +556,7 @@ select.text-input { background: #080c14; }
 /* SEPARATE PUBLIC ARCHIVE FEED VIEWER */
 #archiveViewer{position:fixed;inset:0;z-index:150;display:none;background:var(--void);overflow:hidden;touch-action:pan-y}
 #archiveViewer.open{display:block}
-#archiveViewerSlot{position:absolute;inset:0;width:100%;height:100%}
+#archiveViewerSlot{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 #archiveViewerSlot>.feed-card{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;border-radius:0}
 #btnCloseArchiveViewer{position:fixed;top:max(14px,env(safe-area-inset-top));left:14px;z-index:170;display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:0 11px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(5,7,12,.48);color:var(--text);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:700 9px/1 'JetBrains Mono',monospace;letter-spacing:.7px;cursor:pointer}
 #btnCloseArchiveViewer span:first-child{font-size:13px}
@@ -993,6 +993,18 @@ let endSceneSuppressed = false;
 let archiveViewerOpen = false;
 let archiveViewerNode = null;
 let archiveViewerCard = null;
+
+/* SEARCH FEED — keeps only a 3-card DOM window mounted at a time.
+   allArchiveCards remains the lightweight data cache; the full animated
+   card elements are limited to current + next 2 posts. */
+let searchFeedCards = [];
+let searchFeedIndex = -1;
+let searchFeedNodes = [];
+let searchFeedTransitioning = false;
+let searchFeedSwipeStartX = 0;
+let searchFeedSwipeStartY = 0;
+let searchFeedSwipeActive = false;
+let searchFeedSwipeLocked = false;
 let permalinkViewerOpen = false;
 let permalinkViewerNode = null;
 let permalinkViewerCard = null;
@@ -1544,30 +1556,182 @@ searchInput.oninput = () => {
 function openSearchCard(data){
   searchDrawer.classList.remove('open');
   if(!data || !data.id){ toast('Inscription unavailable'); return; }
-  openArchiveViewer(data,true);
+
+  // Search feed is a completely independent fullscreen feed.
+  // Find the clicked post in the already-loaded archive dataset.
+  const index = Array.isArray(allArchiveCards)
+    ? allArchiveCards.findIndex(p => p && p.id === data.id)
+    : -1;
+
+  if(index < 0){
+    toast('Inscription unavailable');
+    return;
+  }
+
+  openArchiveViewerAt(index, true);
+}
+
+/* =========================================================================
+   SEARCH FEED VIEWER
+   Three full animated cards are kept mounted:
+     [CURRENT] [NEXT] [NEXT]
+   Swiping up advances the window by one. This prevents the search viewer
+   from loading/rebuilding the entire archive as animated DOM at once.
+   ========================================================================= */
+function openArchiveViewerAt(index, updateHistory=true){
+  const viewer=document.getElementById('archiveViewer');
+  const slot=document.getElementById('archiveViewerSlot');
+  if(!viewer || !slot || !Array.isArray(allArchiveCards) || !allArchiveCards.length) return;
+
+  const safeIndex=Math.max(0,Math.min(index,allArchiveCards.length-1));
+  searchFeedCards=allArchiveCards;
+  searchFeedIndex=safeIndex;
+  searchFeedTransitioning=false;
+  archiveViewerOpen=true;
+  archiveViewerCard=searchFeedCards[safeIndex];
+
+  hideEndOfFeedScene();
+  renderSearchFeedWindow(true);
+
+  viewer.classList.add('open');
+  viewer.setAttribute('aria-hidden','false');
+
+  if(updateHistory){
+    const u=new URL(location.href);
+    u.search='';
+    u.hash='';
+    u.searchParams.set('p',archiveViewerCard.id);
+    history.pushState({type:'typeforge-search-feed',id:archiveViewerCard.id},'',u.href);
+  }
 }
 
 function openArchiveViewer(data, updateHistory=true){
-  const viewer=document.getElementById('archiveViewer'), slot=document.getElementById('archiveViewerSlot');
-  if(!viewer || !slot || !data || !data.id) return;
-  archiveViewerOpen=true; archiveViewerCard=data;
-  slot.replaceChildren();
-  hideEndOfFeedScene();
-  try{
-    const card=createCardElement(data); slot.appendChild(card); archiveViewerNode=card;
-    viewer.classList.add('open'); viewer.setAttribute('aria-hidden','false');
-    requestAnimationFrame(()=>{
-      card.classList.add('entered'); card.classList.remove('enter-bottom');
-      const stage=card.querySelector('.card-stage');
-      if(stage)setTimeout(()=>{
-        if(!archiveViewerOpen || archiveViewerNode!==card)return;
-        stage.classList.add('text-animated');
-        if(stage.classList.contains('anim-cyber_scramble')) scramble(stage.querySelector('.kinetic-headline'),data.accent_word||data.accentWord||'');
-      },160);
-    });
-    if(updateHistory){const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('p',data.id);history.pushState({type:'typeforge-archive-card',id:data.id},'',u.href);}
-  }catch(e){console.error('Archive viewer open failed:',e);closeArchiveViewer(true);toast('Inscription unavailable');}
+  if(!data || !data.id) return;
+  const index=Array.isArray(allArchiveCards)
+    ? allArchiveCards.findIndex(p=>p && p.id===data.id)
+    : -1;
+  if(index>=0) openArchiveViewerAt(index,updateHistory);
 }
+
+function animateSearchFeedCard(card,data){
+  if(!card) return;
+  requestAnimationFrame(()=>{
+    card.classList.add('entered');
+    card.classList.remove('enter-bottom');
+    const stage=card.querySelector('.card-stage');
+    if(stage)setTimeout(()=>{
+      if(!archiveViewerOpen || !searchFeedNodes.includes(card)) return;
+      stage.classList.add('text-animated');
+      if(stage.classList.contains('anim-cyber_scramble')){
+        scramble(stage.querySelector('.kinetic-headline'),data.accent_word||data.accentWord||'');
+      }
+    },160);
+  });
+}
+
+function renderSearchFeedWindow(initial=false){
+  const slot=document.getElementById('archiveViewerSlot');
+  if(!slot || !searchFeedCards.length || searchFeedIndex<0) return;
+
+  slot.replaceChildren();
+  searchFeedNodes=[];
+
+  // Exactly three full card DOM nodes maximum: current + two preloaded next posts.
+  const end=Math.min(searchFeedCards.length,searchFeedIndex+3);
+
+  for(let i=searchFeedIndex;i<end;i++){
+    const data=searchFeedCards[i];
+    const card=createCardElement(data);
+
+    if(i===searchFeedIndex){
+      card.classList.remove('enter-bottom');
+      card.style.zIndex='3';
+      searchFeedNodes.push(card);
+      slot.appendChild(card);
+      archiveViewerNode=card;
+      archiveViewerCard=data;
+      markPostViewed(data.id);
+      animateSearchFeedCard(card,data);
+    }else{
+      card.style.zIndex=String(3-(i-searchFeedIndex));
+      // Preloaded but invisible until it becomes current.
+      card.classList.add('enter-bottom');
+      searchFeedNodes.push(card);
+      slot.appendChild(card);
+    }
+  }
+
+  // If this is the last search post, do not show the main-feed end scene.
+  hideEndOfFeedScene();
+}
+
+function advanceSearchFeed(){
+  if(!archiveViewerOpen || searchFeedTransitioning) return;
+  if(searchFeedIndex >= searchFeedCards.length-1){
+    toast('END OF SEARCH RESULTS');
+    return;
+  }
+
+  searchFeedTransitioning=true;
+  const current=searchFeedNodes[0];
+  if(current) current.classList.add('exit-top');
+
+  const nextIndex=searchFeedIndex+1;
+
+  setTimeout(()=>{
+    if(!archiveViewerOpen){
+      searchFeedTransitioning=false;
+      return;
+    }
+
+    searchFeedIndex=nextIndex;
+    renderSearchFeedWindow(false);
+
+    const u=new URL(location.href);
+    u.search='';
+    u.hash='';
+    u.searchParams.set('p',searchFeedCards[searchFeedIndex].id);
+    history.replaceState({type:'typeforge-search-feed',id:searchFeedCards[searchFeedIndex].id},'',u.href);
+
+    setTimeout(()=>{ searchFeedTransitioning=false; },120);
+  },260);
+}
+
+/* Search viewer desktop wheel — main-feed wheel handler ignores this layer. */
+document.getElementById('archiveViewer').addEventListener('wheel',e=>{
+  if(e.deltaY>28 && !searchFeedSwipeLocked && !searchFeedTransitioning){
+    searchFeedSwipeLocked=true;
+    advanceSearchFeed();
+    setTimeout(()=>{searchFeedSwipeLocked=false;},550);
+  }
+},{passive:true});
+
+/* Search viewer mobile upward swipe — same interaction as the main feed. */
+document.getElementById('archiveViewerSlot').addEventListener('pointerdown',e=>{
+  if(!archiveViewerOpen || searchFeedTransitioning || e.pointerType==='mouse') return;
+  searchFeedSwipeActive=true;
+  searchFeedSwipeStartX=e.clientX;
+  searchFeedSwipeStartY=e.clientY;
+},{passive:true});
+
+document.getElementById('archiveViewerSlot').addEventListener('pointerup',e=>{
+  if(!searchFeedSwipeActive) return;
+  searchFeedSwipeActive=false;
+  if(!archiveViewerOpen || searchFeedTransitioning || searchFeedSwipeLocked) return;
+
+  const dx=e.clientX-searchFeedSwipeStartX;
+  const dy=e.clientY-searchFeedSwipeStartY;
+
+  if(dy < -55 && Math.abs(dy) > Math.abs(dx)*1.18){
+    searchFeedSwipeLocked=true;
+    advanceSearchFeed();
+    setTimeout(()=>{searchFeedSwipeLocked=false;},550);
+  }
+},{passive:true});
+
+document.getElementById('archiveViewerSlot').addEventListener('pointercancel',()=>{
+  searchFeedSwipeActive=false;
+});
 
 function openPermalinkViewer(data){
   const viewer=document.getElementById('permalinkViewer'), slot=document.getElementById('permalinkViewerSlot');
@@ -1608,14 +1772,29 @@ document.getElementById('btnClosePermalinkViewer').addEventListener('click',()=>
 
 function closeArchiveViewer(fromHistory=false){
   const viewer=document.getElementById('archiveViewer'),slot=document.getElementById('archiveViewerSlot');
-  archiveViewerOpen=false; archiveViewerCard=null;
-  if(archiveViewerNode)archiveViewerNode.remove(); archiveViewerNode=null; if(slot)slot.replaceChildren();
+  archiveViewerOpen=false;
+  archiveViewerCard=null;
+  searchFeedCards=[];
+  searchFeedIndex=-1;
+  searchFeedTransitioning=false;
+  searchFeedSwipeActive=false;
+  searchFeedNodes=[];
+  if(archiveViewerNode)archiveViewerNode.remove();
+  archiveViewerNode=null;
+  if(slot)slot.replaceChildren();
   if(viewer){viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');}
   endSceneSuppressed=false;
+
   // Main feed was never replaced, so simply reveal its existing state.
   if(currentCardNode)hideEndOfFeedScene();
   else if(isDropViewing && activeBatchIndex>=currentBatch.length){showEndOfFeedScene();}
-  if(!fromHistory){const u=new URL(location.href);u.search='';u.hash='';history.replaceState({type:'typeforge-feed'},'',u.href);}
+
+  if(!fromHistory){
+    const u=new URL(location.href);
+    u.search='';
+    u.hash='';
+    history.replaceState({type:'typeforge-feed'},'',u.href);
+  }
 }
 document.getElementById('btnCloseArchiveViewer').addEventListener('click',()=>closeArchiveViewer(false));
 /* =========================================================================
@@ -1771,11 +1950,22 @@ addEventListener('popstate',()=>{
     return;
   }
 
-  if (!permalinkViewerOpen && id) {
+  if (!permalinkViewerOpen && !archiveViewerOpen && id) {
     bootPermalinkOnly(id);
   }
 
-  if (archiveViewerOpen && !id) closeArchiveViewer(true);
+  if (archiveViewerOpen && !id) {
+    closeArchiveViewer(true);
+    return;
+  }
+
+  if (archiveViewerOpen && id && Array.isArray(searchFeedCards) && searchFeedCards.length) {
+    const idx=searchFeedCards.findIndex(p=>p && p.id===id);
+    if(idx>=0 && idx!==searchFeedIndex){
+      searchFeedIndex=idx;
+      renderSearchFeedWindow(false);
+    }
+  }
 });
 
 addEventListener('DOMContentLoaded', () => {
