@@ -482,6 +482,25 @@ select.text-input { background: #080c14; }
 
 .commit-btn { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; padding: 12px; background: linear-gradient(135deg,var(--good),var(--cyan)); color: #020508; border-radius: var(--r); margin-top: 6px; }
 .search-box { width: min(540px,100%); background: var(--panel-solid); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.search-results-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; max-height:62vh; overflow:auto; padding:2px; }
+.archive-mini-card { position:relative; min-height:145px; border:1px solid rgba(255,255,255,.10); border-radius:14px; overflow:hidden; text-align:left; color:var(--text); background:#090d14; padding:0; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,.18); transition:transform .18s ease,border-color .18s ease; }
+.archive-mini-card:active { transform:scale(.985); }
+.archive-mini-card:hover { border-color:rgba(72,232,255,.42); }
+.archive-mini-bg { position:absolute; inset:0; opacity:.62; }
+.archive-mini-bg.warp { background:radial-gradient(circle at 20% 25%,rgba(72,232,255,.22),transparent 28%),radial-gradient(circle at 80% 70%,rgba(125,75,255,.20),transparent 30%),#070a10; }
+.archive-mini-bg.grid { background:linear-gradient(rgba(72,232,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(72,232,255,.08) 1px,transparent 1px),#070a10;background-size:18px 18px; }
+.archive-mini-bg.clouds { background:radial-gradient(circle at 30% 30%,rgba(160,120,255,.30),transparent 35%),radial-gradient(circle at 70% 70%,rgba(72,232,255,.18),transparent 35%),#0a0a14; }
+.archive-mini-bg.aurora { background:linear-gradient(135deg,rgba(50,255,180,.22),transparent 45%),linear-gradient(315deg,rgba(80,110,255,.22),transparent 55%),#07100f; }
+.archive-mini-bg.pulse { background:radial-gradient(circle,rgba(255,80,100,.24),transparent 20%),radial-gradient(circle at 80% 20%,rgba(255,220,80,.15),transparent 28%),#10080a; }
+.archive-mini-bg.orbit { background:radial-gradient(circle,transparent 14%,rgba(72,232,255,.12) 15%,transparent 16%,transparent 28%,rgba(160,120,255,.12) 29%,transparent 30%),#070a10; }
+.archive-mini-content { position:relative; z-index:1; min-height:145px; display:flex; flex-direction:column; justify-content:space-between; padding:11px; background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.55)); }
+.archive-mini-meta { font:700 8px/1 'JetBrains Mono',monospace; letter-spacing:.65px; color:rgba(255,255,255,.62); text-transform:uppercase; }
+.archive-mini-headline { font:900 clamp(14px,3.5vw,20px)/.95 'Space Grotesk',sans-serif; letter-spacing:-.5px; text-transform:uppercase; display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden; }
+.archive-mini-accent { color:var(--card-accent,var(--cyan)); }
+.archive-mini-foot { display:flex; justify-content:space-between; gap:8px; font:600 8px/1.2 'JetBrains Mono',monospace; color:rgba(255,255,255,.55); }
+.search-empty { grid-column:1/-1; opacity:.55; padding:18px 4px; text-align:center; font:600 10px/1.5 'JetBrains Mono',monospace; }
+@media(max-width:420px){ .search-results-grid{grid-template-columns:1fr 1fr;gap:8px;} .archive-mini-card,.archive-mini-content{min-height:132px;} }
+
 .modal-close { font-size: 20px; color: var(--muted); align-self: flex-end; }
 #searchResults { display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow: auto; }
 #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(12,17,28,.72); border: 1px solid rgba(120,180,255,.16); padding: 6px 11px; border-radius: var(--r); font-size: 10px; opacity: 0; transition: opacity .25s ease, transform .25s ease; z-index: 300; pointer-events: none; }
@@ -534,6 +553,14 @@ select.text-input { background: #080c14; }
   .creator-preview { width: 100% !important; border-right: none !important; border-bottom: 1px solid var(--line); }
 }
 
+/* SEPARATE PUBLIC ARCHIVE FEED VIEWER */
+#archiveViewer{position:fixed;inset:0;z-index:150;display:none;background:var(--void);overflow:hidden;touch-action:pan-y}
+#archiveViewer.open{display:block}
+#archiveViewerSlot{position:absolute;inset:0;width:100%;height:100%}
+#archiveViewerSlot>.feed-card{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;border-radius:0}
+#btnCloseArchiveViewer{position:fixed;top:max(14px,env(safe-area-inset-top));left:14px;z-index:170;display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:0 11px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(5,7,12,.48);color:var(--text);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:700 9px/1 'JetBrains Mono',monospace;letter-spacing:.7px;cursor:pointer}
+#btnCloseArchiveViewer span:first-child{font-size:13px}
+#btnCloseArchiveViewer:active{transform:scale(.96);opacity:.75}
 /* END-OF-FEED INTERACTIVE 3D OBJECT */
 #endOfFeedScene {
   position:absolute; inset:0; display:none; align-items:center; justify-content:center;
@@ -578,6 +605,11 @@ select.text-input { background: #080c14; }
 <!-- SINGLE-CARD INSPECT STAGE -->
 <div id="mainStage">
   <div class="active-card-slot" id="activeSlot"></div>
+</div>
+
+<div id="archiveViewer" aria-hidden="true">
+  <button id="btnCloseArchiveViewer" type="button" aria-label="Close and return to main feed"><span>✕</span><span>MAIN FEED</span></button>
+  <div id="archiveViewerSlot"></div>
 </div>
 
 
@@ -669,7 +701,7 @@ REMAINS FOREVER</textarea></div>
   <div class="search-box">
     <button class="modal-close" id="btnCloseSearch">✕</button>
     <input class="text-input" id="searchInput" placeholder="Search keywords, headlines, or badges...">
-    <div id="searchResults"></div>
+    <div id="searchResults" class="search-results-grid"></div>
   </div>
 </div>
 
@@ -925,7 +957,9 @@ function scramble(h, a) {
 }
 
 /* =========================================================================
-   4. DECK CONTROLLER (3 CARDS SETTLE AT BOTTOM -> SWIPED UP ONE BY ONE)
+   4. DECK CONTROLLER — MANUALLY CURATED DAILY FEED
+   Only the 10 posts in /drops/today.json are loaded into the main feed.
+   The permanent archive is separate and is accessed through Search.
    ========================================================================= */
 let currentBatch = [];
 let activeBatchIndex = -1;
@@ -933,257 +967,87 @@ let cursorCreatedAt = null;
 let cursorId = null;
 let hasMore = true;
 
-// PUBLIC FEED: Cloudflare static JSON only. Supabase remains for posting.
-const STATIC_FEED_BASE = 'https://typeforge-feed-worker.ap095665.workers.dev';
-let feedManifest = null;
-let feedCardIndex = null;
-let feedShardCache = new Map();
-let feedCards = [];
-let feedCardMap = new Map();
-let feedPosition = 0;
-let feedOffset = 0;
+const STATIC_FEED_BASE = 'https://typeforge-feed.pages.dev';
+const SEARCH_WORKER_BASE = 'https://typeforge-feed-worker.ap095665.workers.dev';
+let curatedFeed = null;
 let isFetching = false;
 let currentCardNode = null;
 let isTransitioning = false;
-
-/* DAILY 3-DROP VIEWING GATE */
-const TYPEFORGE_DROP_TIMES = ["09:00", "15:00", "21:00"];
-const TYPEFORGE_VIEWED_KEY = "typeforge_viewed_post_ids_v1";
-const TYPEFORGE_DROP_STATE_KEY = "typeforge_daily_drop_state_v1";
-let viewedPostIds = new Set();
-let dailyDropState = null;
 let isDropViewing = true;
+// Prevent delayed feed/end-scene callbacks from leaking into archive-post view.
+let endSceneSuppressed = false;
+// Search/archive is a completely separate viewer; it never replaces main-feed state.
+let archiveViewerOpen = false;
+let archiveViewerNode = null;
+let archiveViewerCard = null;
 
-function localDateKey(d = new Date()) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function loadViewingState() {
+async function loadCuratedFeed() {
+  if (curatedFeed) return curatedFeed;
   try {
-    const rawViewed = JSON.parse(localStorage.getItem(TYPEFORGE_VIEWED_KEY) || "[]");
-    viewedPostIds = new Set(Array.isArray(rawViewed) ? rawViewed.filter(Boolean) : []);
-  } catch (_) { viewedPostIds = new Set(); }
-
-  const today = localDateKey();
-  try {
-    const saved = JSON.parse(localStorage.getItem(TYPEFORGE_DROP_STATE_KEY) || "null");
-    if (saved && saved.date === today && Number.isInteger(saved.completed)) {
-      dailyDropState = { date: today, completed: Math.max(0, Math.min(3, saved.completed)), pendingIds: Array.isArray(saved.pendingIds) ? saved.pendingIds.filter(Boolean) : [] };
-    } else {
-      dailyDropState = { date: today, completed: 0, pendingIds: [] };
-      localStorage.setItem(TYPEFORGE_DROP_STATE_KEY, JSON.stringify(dailyDropState));
+    const res = await fetch(`${STATIC_FEED_BASE}/drops/today.json?v=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Curated feed failed (${res.status})`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('Invalid curated feed');
+    const live = data.slice(0, 10).filter(x => x && x.id);
+    if (!live.length) throw new Error('Curated feed is empty');
+    curatedFeed = live;
+    return curatedFeed;
+  } catch (e) {
+    // The embedded snapshot keeps the app usable when the preview/browser
+    // blocks cross-origin fetches or Cloudflare is temporarily unavailable.
+    if (Array.isArray(TYPEFORGE_BOOT_FALLBACK) && TYPEFORGE_BOOT_FALLBACK.length) {
+      curatedFeed = TYPEFORGE_BOOT_FALLBACK.slice(0, 10).filter(x => x && x.id);
+      console.debug('Using embedded curated feed snapshot:', e);
+      return curatedFeed;
     }
-  } catch (_) {
-    dailyDropState = { date: today, completed: 0, pendingIds: [] };
-  }
-  reconcileDailyDropState();
-}
-
-function reconcileDailyDropState() {
-  if (!dailyDropState) return;
-  if (!Array.isArray(dailyDropState.pendingIds)) dailyDropState.pendingIds = [];
-  while (dailyDropState.pendingIds.length && dailyDropState.pendingIds.every(id => viewedPostIds.has(id))) {
-    dailyDropState.completed = Math.min(3, Number(dailyDropState.completed || 0) + 1);
-    dailyDropState.pendingIds = [];
+    throw e;
   }
 }
 
-function persistViewingState() {
+async function loadNextTriad(autoPresentFirst = true) {
+  if (isFetching) return;
+  isFetching = true;
+  btnNextSwipe.textContent = 'SYNCING...';
   try {
-    localStorage.setItem(TYPEFORGE_VIEWED_KEY, JSON.stringify(Array.from(viewedPostIds)));
-    localStorage.setItem(TYPEFORGE_DROP_STATE_KEY, JSON.stringify(dailyDropState));
-  } catch (_) {}
-}
-
-function dropTimeMinutes(index) {
-  const [h, m] = TYPEFORGE_DROP_TIMES[index].split(":").map(Number);
-  return h * 60 + m;
-}
-
-function currentMinutes() {
-  const d = new Date();
-  return d.getHours() * 60 + d.getMinutes();
-}
-
-function nextDropIndex() {
-  return Math.min(3, Number(dailyDropState?.completed || 0));
-}
-
-function dropUnlocked(index = nextDropIndex()) {
-  return index < 3 && currentMinutes() >= dropTimeMinutes(index);
-}
-
-function markPostViewed(id) {
-  if (!id || !isDropViewing) return;
-  if (viewedPostIds.has(id)) return;
-  viewedPostIds.add(id);
-  persistViewingState();
-}
-
-function markDropCompletedIfNeeded() {
-  if (!isDropViewing || !dailyDropState || activeBatch.length === 0) return;
-  if (activeBatch.every(card => card?.id && viewedPostIds.has(card.id))) {
-    const next = Math.min(3, Number(dailyDropState.completed || 0) + 1);
-    if (next !== dailyDropState.completed) {
-      dailyDropState.completed = next;
-      dailyDropState.pendingIds = [];
-      persistViewingState();
+    const data = await loadCuratedFeed();
+    currentBatch = data;
+    hasMore = currentBatch.length > 0;
+    activeBatchIndex = -1;
+    if (currentBatch.length && autoPresentFirst) {
+      hideEndOfFeedScene();
+      presentCard(0);
+    } else if (!currentCardNode) {
+      showEndOfFeedScene();
     }
+  } catch (e) {
+    console.error('Curated feed load failed:', e);
+    toast('Feed unavailable — please retry');
+  } finally {
+    isFetching = false;
+    btnNextSwipe.textContent = 'SWIPE UP ▲';
+    updateBottomTrayUI();
   }
 }
 
-function formatNextDrop(index) {
-  if (index >= 3) return "ALL 3 DROPS COMPLETED FOR TODAY";
-  return `NEXT DROP · ${TYPEFORGE_DROP_TIMES[index]}`;
-}
+function markPostViewed() {}
+function markDropCompletionProgress() {}
 
 function updateEndSceneMessage() {
-  const copy = document.querySelector("#endOfFeedScene .end-feed-copy");
+  const copy = document.querySelector('#endOfFeedScene .end-feed-copy');
   if (!copy) return;
-  const idx = nextDropIndex();
-  if (idx >= 3) {
-    copy.innerHTML = "DOOM SCROLLING IS UNHEALTHY — TAKE A REST" +
-      "<span>ALL 3 DROPS COMPLETED · COME BACK TOMORROW</span>";
-    return;
-  }
-  if (!dropUnlocked(idx)) {
-    copy.innerHTML = "DOOM SCROLLING IS UNHEALTHY — TAKE A REST" +
-      `<span>I HAVE A SPECIAL DROP FOR YOU · ${formatNextDrop(idx)}</span>`;
-  } else {
-    copy.innerHTML = "ROTATE THIS UNTIL THE NEXT POST ARRIVES" +
-      `<span>DROP ${idx + 1} IS READY · 10 POSTS MAX</span>`;
-  }
+  copy.innerHTML = "DOOM SCROLLING IS UNHEALTHY — TAKE A REST" +
+    "<span>TODAY'S 10 CURATED POSTS ARE COMPLETE · SEARCH THE PERMANENT ARCHIVE ANYTIME</span>";
 }
-
 
 function updateBottomTrayUI() {
   const tray = document.getElementById('bottomDeckTray');
   tray.classList.remove('end-state');
   btnNextSwipe.textContent = 'END STREAM';
-  if (!hasMore && activeBatchIndex >= currentBatch.length - 1) {
-    tray.classList.add('end-state');
-  }
+  if (!hasMore || activeBatchIndex >= currentBatch.length - 1) tray.classList.add('end-state');
 }
 
 function trayEndState() {
   document.getElementById('bottomDeckTray').classList.add('end-state');
-}
-
-async function loadFeedShard(shardFile) {
-  if (feedShardCache.has(shardFile)) return feedShardCache.get(shardFile);
-  const feedVersion = encodeURIComponent(feedManifest?.generated_at || feedManifest?.version || 'live');
-  const res = await fetch(`${STATIC_FEED_BASE}/${encodeURIComponent(shardFile)}?v=${feedVersion}`);
-  if (!res.ok) throw new Error(`Feed shard ${shardFile} failed (${res.status})`);
-  const data = await res.json();
-  if (!Array.isArray(data)) throw new Error(`Invalid feed shard: ${shardFile}`);
-  feedShardCache.set(shardFile, data);
-  for (const card of data) {
-    if (card && card.id) feedCardMap.set(card.id, card);
-  }
-  return data;
-}
-
-async function initStaticFeed() {
-  if (feedManifest) return;
-  const [manifestRes, indexRes] = await Promise.all([
-    fetch(`${STATIC_FEED_BASE}/manifest.json`),
-    fetch(`${STATIC_FEED_BASE}/card-index.json`)
-  ]);
-  if (!manifestRes.ok) throw new Error(`Feed manifest failed (${manifestRes.status})`);
-  if (!indexRes.ok) throw new Error(`Feed index failed (${indexRes.status})`);
-  feedManifest = await manifestRes.json();
-  feedCardIndex = await indexRes.json();
-  if (!Array.isArray(feedManifest.shards)) throw new Error('Invalid feed manifest');
-  if (!feedCardIndex || typeof feedCardIndex !== 'object') throw new Error('Invalid feed card index');
-}
-
-async function loadNextTriad(autoPresentFirst = true) {
-  if (isFetching || !hasMore) return;
-  isFetching = true;
-  btnNextSwipe.textContent = `SYNCING...`;
-
-  try {
-    await initStaticFeed();
-    loadViewingState();
-
-    const dropIndex = nextDropIndex();
-    if (dropIndex >= 3 || !dropUnlocked(dropIndex)) {
-      hasMore = false;
-      if (!currentCardNode) showEndOfFeedScene();
-      return;
-    }
-
-    isDropViewing = true;
-
-    // Resume an unfinished drop exactly where the visitor left it.
-    if (Array.isArray(dailyDropState.pendingIds) && dailyDropState.pendingIds.length) {
-      const pending = [];
-      for (const id of dailyDropState.pendingIds) {
-        if (viewedPostIds.has(id)) continue;
-        let card = feedCardMap.get(id);
-        if (!card) {
-          const meta = feedCardIndex?.[id];
-          const file = typeof meta === 'string' ? meta : meta?.file;
-          if (file) {
-            const shard = await loadFeedShard(file);
-            card = shard.find(x => x?.id === id);
-          }
-        }
-        if (card) pending.push(card);
-      }
-      if (pending.length) {
-        currentBatch = pending.slice(0, 10);
-        hasMore = true;
-        activeBatchIndex = -1;
-        if (autoPresentFirst) presentCard(0);
-        return;
-      }
-      dailyDropState.pendingIds = [];
-      persistViewingState();
-    }
-
-    const candidates = [];
-
-    while (feedPosition < feedManifest.shards.length && candidates.length < 10) {
-      const shardMeta = feedManifest.shards[feedPosition];
-      const shard = await loadFeedShard(shardMeta.file);
-
-      while (feedOffset < shard.length && candidates.length < 10) {
-        const card = shard[feedOffset++];
-        if (card?.id && !viewedPostIds.has(card.id)) candidates.push(card);
-      }
-
-      if (feedOffset >= shard.length) {
-        feedPosition += 1;
-        feedOffset = 0;
-      }
-    }
-
-    currentBatch = candidates.slice(0, 10);
-
-    if (currentBatch.length) {
-      dailyDropState.pendingIds = currentBatch.map(card => card.id).filter(Boolean);
-      persistViewingState();
-
-      hasMore = true;
-      activeBatchIndex = -1;
-      if (autoPresentFirst) presentCard(0);
-      return;
-    }
-
-    hasMore = false;
-    if (!currentCardNode) showEndOfFeedScene();
-  } catch (e) {
-    console.error('Static feed load failed:', e);
-    toast('Feed unavailable — please retry');
-  } finally {
-    isFetching = false;
-    btnNextSwipe.textContent = 'SWIPE UP ▲';
-    updateEndSceneMessage();
-  }
 }
 
 let endFeedTimer = null;
@@ -1191,10 +1055,14 @@ let endCubeX = -18, endCubeY = 28;
 let endDrag = false, endLastX = 0, endLastY = 0;
 
 function showEndOfFeedScene() {
+  // The end scene is valid ONLY when the curated feed has truly reached
+  // an empty state. Never allow a stale/delayed callback to overlay a card.
+  if (!isDropViewing || endSceneSuppressed || currentCardNode || isTransitioning) return;
+  if (activeBatchIndex < currentBatch.length) return;
   const scene = document.getElementById('endOfFeedScene');
   if (scene) scene.classList.add('visible');
   updateEndSceneMessage();
-  if (!endFeedTimer) endFeedTimer = setInterval(checkForNewPosts, 30000);
+  if (!endFeedTimer) endFeedTimer = setInterval(checkForNewPosts, 15000);
 }
 
 function hideEndOfFeedScene() {
@@ -1203,32 +1071,7 @@ function hideEndOfFeedScene() {
 }
 
 async function checkForNewPosts() {
-  loadViewingState();
-  updateEndSceneMessage();
-  if (!feedManifest) return;
-
-  const dropIndex = nextDropIndex();
-  if (dropIndex >= 3 || !dropUnlocked(dropIndex)) return;
-  if (currentCardNode || isFetching) return;
-
-  try {
-    const res = await fetch(`${STATIC_FEED_BASE}/manifest.json?_=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) return;
-    const latest = await res.json();
-    const changed = Number(latest.total_cards || 0) !== Number(feedManifest.total_cards || 0) || latest.generated_at !== feedManifest.generated_at;
-    if (changed) {
-      feedManifest = latest;
-      feedCardIndex = {};
-      const idxRes = await fetch(`${STATIC_FEED_BASE}/card-index.json?_=${Date.now()}`, { cache: 'no-store' });
-      if (idxRes.ok) feedCardIndex = await idxRes.json();
-      feedShardCache.clear();
-      feedCardMap.clear();
-      feedPosition = 0; feedOffset = 0; hasMore = true; currentBatch = []; activeBatchIndex = -1;
-    }
-
-    hideEndOfFeedScene();
-    await loadNextTriad(true);
-  } catch (e) { console.debug('Waiting for next post', e); }
+  /* Intentionally empty: the daily feed is manually published, not polled. */
 }
 
 (function initEndCube() {
@@ -1278,6 +1121,10 @@ function presentCard(index) {
 function dismissActiveAndAdvance() {
   if (isFetching || isTransitioning) return;
 
+  /* ARCHIVE VIEWER IS SEPARATE FROM THE MAIN FEED. Its swipe/wheel events
+     are intentionally ignored; use the explicit MAIN FEED close button. */
+  if (archiveViewerOpen) return;
+
   if (!currentCardNode) {
     if (currentBatch.length > 0) presentCard(0);
     else loadNextTriad(true);
@@ -1299,62 +1146,42 @@ function dismissActiveAndAdvance() {
       presentCard(nextIndex);
     }, 120);
   } else {
-    // 10 posts completed -> unlock only the next scheduled drop.
     currentCardNode = null;
     activeBatchIndex = currentBatch.length;
-    markDropCompletedIfNeeded();
+    markDropCompletionProgress();
     hasMore = false;
-    updateEndSceneMessage();
-    showEndOfFeedScene();
+
+    /* IMPORTANT: immediately continue with any already-released pending posts.
+       This is what prevents the black/empty screen after post 10. */
+    setTimeout(async () => {
+      try {
+        refreshReleasedDrops();
+        await releaseAvailablePosts();
+        const pending = await cardsFromPending(10);
+        if (pending.length) {
+          currentBatch = pending;
+          activeBatchIndex = -1;
+          hasMore = true;
+          presentCard(0);
+          return;
+        }
+      } catch (e) {
+        console.debug('Next batch waiting', e);
+      }
+      if (isDropViewing && !currentCardNode) {
+        updateEndSceneMessage();
+        showEndOfFeedScene();
+      } else {
+        hideEndOfFeedScene();
+      }
+    }, 520);
   }
 }
-
-/* =========================================================================
-   5. REAL 1:1 FLUID TOUCH SWIPE CONTROLLER
-   ========================================================================= */
-let startY = 0, currentY = 0, startX = 0, isDragging = false;
-
-window.addEventListener('touchstart', e => {
-  if (e.target.closest('#creatorDrawer, #searchDrawer, button, a, input, select, textarea')) return;
-  if (!currentCardNode || isTransitioning) return;
-  startY = e.touches[0].clientY;
-  startX = e.touches[0].clientX;
-  currentY = startY;
-  isDragging = true;
-  currentCardNode.style.transition = 'none';
-}, { passive: true });
-
-window.addEventListener('touchmove', e => {
-  if (!isDragging || !currentCardNode) return;
-  currentY = e.touches[0].clientY;
-  let dy = currentY - startY;
-  let dx = e.touches[0].clientX - startX;
-
-  // Track finger smoothly upward
-  if (dy < 0 && Math.abs(dy) > Math.abs(dx)) {
-    currentCardNode.style.transform = `translate3d(0, ${dy}px, 0) scale(${1 - Math.min(0.08, -dy / 1000)})`;
-    currentCardNode.style.opacity = `${1 - Math.min(0.55, -dy / 450)}`;
-  }
-}, { passive: true });
-
-window.addEventListener('touchend', () => {
-  if (!isDragging || !currentCardNode) return;
-  isDragging = false;
-  let dy = currentY - startY;
-  currentCardNode.style.transition = 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease';
-
-  if (dy < -55) {
-    dismissActiveAndAdvance();
-  } else {
-    currentCardNode.style.transform = 'translate3d(0, 0, 0) scale(1)';
-    currentCardNode.style.opacity = '1';
-  }
-}, { passive: true });
 
 /* DESK / MOUSE WHEEL GESTURE */
 let wheelLock = false;
 window.addEventListener('wheel', e => {
-  if (e.target.closest('#creatorDrawer, #searchDrawer')) return;
+  if (e.target.closest('#creatorDrawer, #searchDrawer, #archiveViewer')) return;
   if (e.deltaY > 28 && !wheelLock && !isTransitioning) {
     wheelLock = true;
     dismissActiveAndAdvance();
@@ -1502,134 +1329,311 @@ document.getElementById('btnCommit').onclick = async () => {
 };
 
 /* =========================================================================
-   8. SEARCH MODAL
+   8. SEARCH MODAL — PUBLIC PERMANENT ARCHIVE
+   Search is served by the Cloudflare Worker from public static archive files.
+   The main feed never downloads the archive.
    ========================================================================= */
 const searchDrawer = document.getElementById('searchDrawer');
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 let searchRequestToken = 0;
+const searchResultMap = new Map();
+let allArchiveCards = null;
+let allArchiveCardsPromise = null;
 
-const openSearch = () => searchDrawer.classList.add('open');
+async function loadAllArchiveCards() {
+  if (Array.isArray(allArchiveCards)) {
+    renderSearchCards(allArchiveCards);
+    return allArchiveCards;
+  }
+  if (allArchiveCardsPromise) return allArchiveCardsPromise;
+  const requestToken = ++searchRequestToken;
+  searchResults.innerHTML = '<div class="search-empty">LOADING PERMANENT ARCHIVE…</div>';
+  allArchiveCardsPromise = (async () => {
+    try {
+      const res = await fetch(`${SEARCH_WORKER_BASE}/search?limit=10000`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`archive ${res.status}`);
+      const data = await res.json();
+      if (requestToken !== searchRequestToken) return [];
+      const results = Array.isArray(data.results) ? data.results : [];
+      allArchiveCards = results;
+      renderSearchCards(results);
+      return results;
+    } catch (e) {
+      console.error('Public archive load failed:', e);
+      if (requestToken === searchRequestToken) searchResults.innerHTML = '<div class="search-empty">ARCHIVE UNAVAILABLE</div>';
+      return [];
+    } finally {
+      allArchiveCardsPromise = null;
+    }
+  })();
+  return allArchiveCardsPromise;
+}
+
+function renderSearchCards(results) {
+  searchResultMap.clear();
+  for (const p of results) if (p?.id) searchResultMap.set(p.id, p);
+  searchResults.innerHTML = results.length
+    ? results.map(archiveMiniCard).join('')
+    : '<div class="search-empty">NO PERMANENT POSTS FOUND</div>';
+}
+
+const openSearch = () => {
+  searchDrawer.classList.add('open');
+  loadAllArchiveCards();
+  setTimeout(() => searchInput.focus(), 60);
+};
 document.getElementById('btnOpenSearch').onclick = openSearch;
 document.getElementById('btnOpenSearchMobile').onclick = openSearch;
 document.getElementById('btnCloseSearch').onclick = () => searchDrawer.classList.remove('open');
 
-searchInput.oninput = async () => {
-  const requestToken = ++searchRequestToken;
-  let q = searchInput.value.trim().toLowerCase();
-  if (!q) return searchResults.replaceChildren();
-  q = q.replace(/[%,()]/g, ' ').trim();
-  if (!q) return searchResults.replaceChildren();
-
-  try {
-    await initStaticFeed();
-    const results = [];
-    for (const meta of feedManifest.shards) {
-      const shard = await loadFeedShard(meta.file);
-      for (const p of shard) {
-        const haystack = `${p.headline || ''}\n${p.subtitle || ''}\n${p.tagline || ''}`.toLowerCase();
-        if (haystack.includes(q)) {
-          results.push(p);
-          if (results.length >= 8) break;
-        }
-      }
-      if (results.length >= 8) break;
-    }
-    if (requestToken !== searchRequestToken) return;
-    searchResults.innerHTML = results.map(p =>
-      `<button class="text-input" style="padding:8px 0;text-align:left;border-bottom:1px solid var(--line);" onclick="jumpToCard('${p.id}')">#${p.serial_no} · ${esc(p.headline)}</button>`
-    ).join('');
-  } catch (e) {
-    if (requestToken === searchRequestToken) {
-      console.error('Static search failed:', e);
-      searchResults.innerHTML = '<div style="opacity:.6;padding:10px 0">Search unavailable</div>';
-    }
-  }
-};
-
-async function jumpToCard(id) {
-  searchDrawer.classList.remove('open');
-  try {
-    await initStaticFeed();
-    let data = feedCardMap.get(id);
-    if (!data) {
-      const shardMeta = feedCardIndex[id];
-      const shardFile = typeof shardMeta === 'string' ? shardMeta : shardMeta?.file;
-      if (shardFile) data = (await loadFeedShard(shardFile)).find(x => x.id === id);
-    }
-    if (data) {
-      isDropViewing = false;
-      const u = new URL(location.href);
-      u.search = '';
-      u.hash = '';
-      u.searchParams.set('p', id);
-      history.pushState({ type: 'typeforge-card', id }, '', u.href);
-      if (currentCardNode) currentCardNode.remove();
-      currentBatch = [data];
-      cursorCreatedAt = data.created_at || null;
-      cursorId = data.id || null;
-      hasMore = true;
-      activeBatchIndex = 0;
-      updateBottomTrayUI();
-      presentCard(0);
-    } else {
-      toast('Inscription not found');
-    }
-  } catch (e) {
-    console.error('Static card lookup failed:', e);
-    toast('Inscription unavailable');
-  }
+function archiveMiniCard(p) {
+  const title = esc((p.headline || 'UNTITLED').replace(/\n/g,' '));
+  const accent = esc(p.accent_word || '');
+  const theme = esc(p.theme || 'cyber');
+  const bg = esc(p.bg || 'warp');
+  const serial = esc(String(p.serial_no || ''));
+  const tag = esc(p.tagline || 'PERMANENT STATEMENT');
+  return `<button class="archive-mini-card" type="button" data-search-card-id="${esc(p.id)}" style="--card-accent:${themeAccent(theme)}">` +
+    `<span class="archive-mini-bg ${bg}"></span>` +
+    `<span class="archive-mini-content">` +
+      `<span class="archive-mini-meta">#${serial} · ${tag}</span>` +
+      `<span class="archive-mini-headline">${highlightAccent(title,accent)}</span>` +
+      `<span class="archive-mini-foot"><span>${esc(theme)}</span><span>${esc(bg)}</span></span>` +
+    `</span></button>`;
 }
 
+function themeAccent(theme) {
+  const m={cyber:'#48e8ff',gold:'#ffd66b',matrix:'#62ff8b',acid:'#d9ff4d',crimson:'#ff5574',minimal:'#e7e7e7'};
+  return m[theme]||'#48e8ff';
+}
+function highlightAccent(text,accent){
+  if(!accent) return text;
+  const safe=accent.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  try{return text.replace(new RegExp(safe,'ig'),m=>`<span class="archive-mini-accent">${m}</span>`);}catch(_){return text;}
+}
+
+searchResults.addEventListener('click', e => {
+  const btn=e.target.closest('[data-search-card-id]');
+  if(btn) openSearchCard(searchResultMap.get(btn.dataset.searchCardId));
+});
+
+searchInput.addEventListener('focus', () => {
+  loadAllArchiveCards();
+});
+
+let searchDebounceTimer = null;
+
+function normalizeLocalSearch(value){
+  return String(value || '')
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu,' ')
+    .trim();
+}
+
+function filterLocalArchiveCards(q){
+  if(!Array.isArray(allArchiveCards)) return [];
+  const terms=normalizeLocalSearch(q).split(/\s+/).filter(Boolean).slice(0,6);
+  if(!terms.length) return allArchiveCards;
+  const scored=[];
+  for(const p of allArchiveCards){
+    const headline=normalizeLocalSearch(p.headline);
+    const accent=normalizeLocalSearch(p.accent_word);
+    const tagline=normalizeLocalSearch(p.tagline);
+    const subtitle=normalizeLocalSearch(p.subtitle);
+    const hay=[headline,accent,tagline,subtitle,String(p.serial_no||'')].join(' ');
+    let score=0;
+    for(const term of terms){
+      if(headline.includes(term)) score+=8;
+      else if(accent.includes(term)) score+=6;
+      else if(tagline.includes(term)) score+=4;
+      else if(subtitle.includes(term)) score+=2;
+      else if(hay.includes(term)) score+=1;
+    }
+    if(score >= terms.length) scored.push({p,score});
+  }
+  scored.sort((a,b)=>(b.score-a.score)||(Number(b.p.serial_no||0)-Number(a.p.serial_no||0)));
+  return scored.slice(0,100).map(x=>x.p);
+}
+
+searchInput.oninput = () => {
+  const requestToken=++searchRequestToken;
+  const q=searchInput.value.trim().replace(/[\\]/g,' ').replace(/\s+/g,' ');
+  clearTimeout(searchDebounceTimer);
+
+  if(!q){
+    if(Array.isArray(allArchiveCards)) renderSearchCards(allArchiveCards);
+    else loadAllArchiveCards();
+    return;
+  }
+  if(q.length<2){
+    searchResults.innerHTML='<div class="search-empty">TYPE AT LEAST 2 CHARACTERS</div>';
+    return;
+  }
+
+  searchResults.innerHTML='<div class="search-empty">SEARCHING ARCHIVE…</div>';
+  searchDebounceTimer=setTimeout(()=>{
+    if(requestToken!==searchRequestToken) return;
+    if(!Array.isArray(allArchiveCards)){
+      searchResults.innerHTML='<div class="search-empty">LOADING PERMANENT ARCHIVE…</div>';
+      loadAllArchiveCards().then(()=>{
+        if(requestToken!==searchRequestToken) return;
+        renderSearchCards(filterLocalArchiveCards(q));
+      });
+      return;
+    }
+    renderSearchCards(filterLocalArchiveCards(q));
+  },300);
+};
+
+function openSearchCard(data){
+  searchDrawer.classList.remove('open');
+  if(!data || !data.id){ toast('Inscription unavailable'); return; }
+  openArchiveViewer(data,true);
+}
+
+function openArchiveViewer(data, updateHistory=true){
+  const viewer=document.getElementById('archiveViewer'), slot=document.getElementById('archiveViewerSlot');
+  if(!viewer || !slot || !data || !data.id) return;
+  archiveViewerOpen=true; archiveViewerCard=data;
+  slot.replaceChildren();
+  hideEndOfFeedScene();
+  try{
+    const card=createCardElement(data); slot.appendChild(card); archiveViewerNode=card;
+    viewer.classList.add('open'); viewer.setAttribute('aria-hidden','false');
+    requestAnimationFrame(()=>{
+      card.classList.add('entered'); card.classList.remove('enter-bottom');
+      const stage=card.querySelector('.card-stage');
+      if(stage)setTimeout(()=>{
+        if(!archiveViewerOpen || archiveViewerNode!==card)return;
+        stage.classList.add('text-animated');
+        if(stage.classList.contains('anim-cyber_scramble')) scramble(stage.querySelector('.kinetic-headline'),data.accent_word||data.accentWord||'');
+      },160);
+    });
+    if(updateHistory){const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('p',data.id);history.pushState({type:'typeforge-archive-card',id:data.id},'',u.href);}
+  }catch(e){console.error('Archive viewer open failed:',e);closeArchiveViewer(true);toast('Inscription unavailable');}
+}
+
+function closeArchiveViewer(fromHistory=false){
+  const viewer=document.getElementById('archiveViewer'),slot=document.getElementById('archiveViewerSlot');
+  archiveViewerOpen=false; archiveViewerCard=null;
+  if(archiveViewerNode)archiveViewerNode.remove(); archiveViewerNode=null; if(slot)slot.replaceChildren();
+  if(viewer){viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');}
+  endSceneSuppressed=false;
+  // Main feed was never replaced, so simply reveal its existing state.
+  if(currentCardNode)hideEndOfFeedScene();
+  else if(isDropViewing && activeBatchIndex>=currentBatch.length){showEndOfFeedScene();}
+  if(!fromHistory){const u=new URL(location.href);u.search='';u.hash='';history.replaceState({type:'typeforge-feed'},'',u.href);}
+}
+document.getElementById('btnCloseArchiveViewer').addEventListener('click',()=>closeArchiveViewer(false));
 /* =========================================================================
-   9. BOOTSTRAP INITIALIZER
+   9. BOOTSTRAP INITIALIZER — EAGER / NO-ACTION REQUIRED
+   The curated 10-post drop must render immediately after the page is ready.
+   We bootstrap on DOMContentLoaded and also on window load as a safety net;
+   if a transient network/CORS/cache race occurs, retry automatically without
+   requiring the visitor to scroll, click, or refresh.
    ========================================================================= */
-addEventListener('DOMContentLoaded', async () => {
+let typeforgeBootStarted = false;
+let typeforgeBootComplete = false;
+let typeforgeBootRetryTimer = null;
+
+
+const TYPEFORGE_BOOT_FALLBACK = [
+  {"bg":"aurora","id":"973c2e77-60dc-43bd-87fa-d3647fb64832","anim":"stagger_pop","theme":"minimal","tagline":"Hello This Is Me","headline":"Surely, LORD, you bless the righteous; you surround them with your favor as with","subtitle":"A prayer can melt the heart  of god if you are really that serious.","serial_no":63,"created_at":"2026-09-04T20:42:49.961125+00:00","accent_word":"Lord","outbound_url":null},
+  {"bg":"aurora","id":"156861f2-0250-4284-86ed-d2874d79a17b","anim":"neon_surge","theme":"gold","tagline":"PERMANENT STATEMENT","headline":"CREATE ONCE\nREMAINS FOREVER","subtitle":"Hardware-accelerated typography on the web ↓","serial_no":62,"created_at":"2026-09-04T19:26:42.611907+00:00","accent_word":"FOREVER","outbound_url":null},
+  {"bg":"clouds","id":"fbc44626-01a1-4536-ba16-aba4e741ce22","anim":"kinetic_slam","theme":"crimson","tagline":"PERMANENT STATEMENT","headline":"A sample test","subtitle":"Just a test","serial_no":61,"created_at":"2026-09-04T18:48:18.52824+00:00","accent_word":"A","outbound_url":null},
+  {"bg":"aurora","id":"877623d4-01aa-43a5-80a7-e1a654d288ec","anim":"stagger_pop","theme":"gold","tagline":"PERMANENT STATEMENT","headline":"CREATE ONCE\nREMAINS FOREVER","subtitle":"Hardware-accelerated typography on the web ↓","serial_no":60,"created_at":"2026-09-04T15:44:49.107481+00:00","accent_word":"FOREVER","outbound_url":null},
+  {"bg":"warp","id":"9b3fd620-9219-4e74-8465-874879abcbb0","anim":"kinetic_slam","theme":"cyber","tagline":"Alll the best","headline":"All the best","subtitle":"God bless you","serial_no":59,"created_at":"2026-09-04T10:20:53.056236+00:00","accent_word":"Best","outbound_url":null},
+  {"bg":"orbit","id":"78cd7dd9-6d00-4fdf-803a-9a52f60c30b7","anim":"glitch_rgb","theme":"gold","tagline":"PERMANENT STATEMENT","headline":"Testing for Fun read it fully","subtitle":"It looks very bad ...not like the demo version  you created ....even has layout issue no preview.....i wanted exact same design and animation you used in demo with the current code features","serial_no":58,"created_at":"2026-09-04T09:41:24.760737+00:00","accent_word":"Fun","outbound_url":"https://sindora.site/"},
+  {"bg":"orbit","id":"2bae4104-7e3f-4d7e-bd14-dcf8af22d058","anim":"glitch_rgb","theme":"crimson","tagline":"PERMANENT STATEMENT","headline":"Just for Fun read it fully","subtitle":"It looks very bad ...not like the demo version  you created ....even has layout issue no preview.....i wanted exact same design and animation you used in demo with the current code features","serial_no":57,"created_at":"2026-09-04T09:39:55.068365+00:00","accent_word":"Fun","outbound_url":null},
+  {"bg":"warp","id":"49fbfcac-ad8d-45cf-8c60-c1a5df2fe493","anim":"kinetic_slam","theme":"cyber","tagline":"PERMANENT STATEMENT","headline":"CREATE ONCE\nREMAINS FOREVER","subtitle":"കര്‍ത്താവേ, അവിടുന്ന് എന്നെ പാതാളത്തില്‍നിന്നു കരകയറ്റി; മരണഗര്‍ത്തത്തില്‍ പതിച്ചവരുടെയിടയില്‍ നിന്ന് എന്നെ ജീവനിലേക്ക് ആനയിച്ചു.\n\nസങ്കീര്‍ത്തനങ്ങള്‍ 30 : 3","serial_no":56,"created_at":"2026-09-04T09:20:27.718765+00:00","accent_word":"FOREVER","outbound_url":null},
+  {"bg":"orbit","id":"a189c810-931a-4264-96ff-207c604dc175","anim":"kinetic_slam","theme":"gold","tagline":"PERMANENT STATEMENT","headline":"CREATE ONCE\nREMAINS FOREVER","subtitle":"Hardware-accelerated typography on the web ↓","serial_no":55,"created_at":"2026-09-04T08:57:06.616058+00:00","accent_word":"FOREVER","outbound_url":null},
+  {"bg":"warp","id":"e07b1459-595c-49c2-b655-df9b3df12a0e","anim":"kinetic_slam","theme":"crimson","tagline":"PERMANENT STATEMENT","headline":"CREATE ONCE\nREMAINS FOREVER","subtitle":"Hardware-accelerated typography on the web ↓","serial_no":54,"created_at":"2026-09-04T08:54:08.216786+00:00","accent_word":"FOREVER","outbound_url":null}
+];
+
+async function bootTypeForgeFeed() {
+  if (typeforgeBootComplete || typeforgeBootStarted) return;
+  typeforgeBootStarted = true;
+
   const params = new URLSearchParams(location.search);
   let id = params.get('p');
   if (!id) id = location.hash.match(/^#p=(.+)$/)?.[1] || null;
 
+  // Always start the MAIN curated feed independently. A public archive post
+  // is never substituted into currentBatch.
+  if (!currentCardNode && !currentBatch.length) {
+    isDropViewing = true;
+    endSceneSuppressed = false;
+    currentBatch = TYPEFORGE_BOOT_FALLBACK.slice(0, 10);
+    activeBatchIndex = -1;
+    hasMore = currentBatch.length > 0;
+    hideEndOfFeedScene();
+    requestAnimationFrame(() => {
+      if (!currentCardNode && currentBatch.length) presentCard(0);
+    });
+  }
+
   try {
-    await initStaticFeed();
-
-    loadViewingState();
-
-    if (id) {
-      let data = feedCardMap.get(id);
-      if (!data) {
-        const shardMeta = feedCardIndex[id];
-        const shardFile = typeof shardMeta === 'string' ? shardMeta : shardMeta?.file;
-        if (shardFile) data = (await loadFeedShard(shardFile)).find(x => x.id === id);
-      }
-      if (data) {
-        isDropViewing = false;
-        if (location.hash) {
-          const clean = new URL(location.href);
-          clean.hash = '';
-          clean.searchParams.set('p', id);
-          history.replaceState({ type: 'typeforge-card', id }, '', clean.href);
-        }
-        currentBatch = [data];
-        cursorCreatedAt = data.created_at || null;
-        cursorId = data.id || null;
-        hasMore = true;
-        activeBatchIndex = 0;
-        updateBottomTrayUI();
-        presentCard(0);
-        return;
-      }
-      toast('Inscription not found');
-    }
+    const data = await loadCuratedFeed();
 
     isDropViewing = true;
+    endSceneSuppressed = false;
     feedPosition = 0;
     feedOffset = 0;
-    currentBatch = [];
-    loadNextTriad(true);
+    const hadFallbackCard = !!currentCardNode;
+    currentBatch = data;
+    activeBatchIndex = -1;
+    hasMore = currentBatch.length > 0;
+    hideEndOfFeedScene();
+
+    // Keep the MAIN feed authoritative and mounted.
+    requestAnimationFrame(() => {
+      if (hadFallbackCard && currentCardNode) {
+        currentCardNode.remove();
+        currentCardNode = null;
+      }
+      if (!currentCardNode && currentBatch.length) presentCard(0);
+    });
+
+    // If a deep link points to an archive post, open it in the SEPARATE
+    // archive viewer above the main feed. The main feed state is untouched.
+    if (id) {
+      try {
+        const postRes = await fetch(`${SEARCH_WORKER_BASE}/post/${encodeURIComponent(id)}`, { cache: 'no-store' });
+        if (postRes.ok) {
+          const postData = await postRes.json();
+          openArchiveViewer(postData, false);
+        } else {
+          const clean = new URL(location.href); clean.search=''; clean.hash='';
+          history.replaceState({type:'typeforge-feed'},'',clean.href);
+          toast('Inscription not found');
+        }
+      } catch (_) {
+        toast('Inscription unavailable');
+      }
+    }
+
+    typeforgeBootComplete = true;
   } catch (e) {
     console.error('Static feed bootstrap failed:', e);
-    toast('Feed unavailable — please retry');
+    typeforgeBootStarted = false;
+    clearTimeout(typeforgeBootRetryTimer);
+    typeforgeBootRetryTimer = setTimeout(bootTypeForgeFeed, 700);
   }
+}
+
+addEventListener('popstate',()=>{
+  const id=new URL(location.href).searchParams.get('p');
+  if(archiveViewerOpen && !id) closeArchiveViewer(true);
+});
+
+addEventListener('DOMContentLoaded', () => {
+  requestAnimationFrame(bootTypeForgeFeed);
+});
+
+addEventListener('load', () => {
+  requestAnimationFrame(bootTypeForgeFeed);
 });
 </script>
 </body>
