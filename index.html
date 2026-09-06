@@ -572,20 +572,46 @@ select.text-input { background: #080c14; }
 /* END-OF-FEED INTERACTIVE 3D OBJECT */
 #endOfFeedScene {
   position:absolute; inset:0; display:none; align-items:center; justify-content:center;
-  flex-direction:column; gap:24px; z-index:20; text-align:center;
-  pointer-events:auto;
+  flex-direction:column; gap:18px; z-index:20; text-align:center;
+  pointer-events:auto; padding:24px;
 }
 #endOfFeedScene.visible { display:flex; }
-.end-feed-copy { max-width:min(360px,82vw); color:var(--text); font:800 11px/1.5 'JetBrains Mono',monospace; letter-spacing:1.2px; text-transform:uppercase; opacity:.9; }
-.end-feed-copy span { display:block; margin-top:7px; color:var(--dim); font-size:8px; letter-spacing:1px; }
-.end-cube-wrap { width:150px; height:150px; perspective:900px; touch-action:none; cursor:grab; user-select:none; }
-.end-cube-wrap:active { cursor:grabbing; }
-.end-cube { position:relative; width:90px; height:90px; margin:30px auto; transform-style:preserve-3d; transform:rotateX(-18deg) rotateY(28deg); animation:endCubeIdle 12s linear infinite; }
-.end-cube.paused { animation-play-state:paused; }
-.end-face { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,.42); background:rgba(255,255,255,.035); color:var(--text); font:900 9px/1 'Space Grotesk',sans-serif; letter-spacing:1px; text-shadow:0 0 14px rgba(255,255,255,.35); backdrop-filter:blur(4px); }
-.end-face:nth-child(1){transform:translateZ(45px)} .end-face:nth-child(2){transform:rotateY(180deg) translateZ(45px)} .end-face:nth-child(3){transform:rotateY(90deg) translateZ(45px)} .end-face:nth-child(4){transform:rotateY(-90deg) translateZ(45px)} .end-face:nth-child(5){transform:rotateX(90deg) translateZ(45px)} .end-face:nth-child(6){transform:rotateX(-90deg) translateZ(45px)}
-@keyframes endCubeIdle { from{transform:rotateX(-18deg) rotateY(28deg)} to{transform:rotateX(342deg) rotateY(388deg)} }
-@media (prefers-reduced-motion: reduce){ .end-cube{animation:none;} }
+.end-feed-card {
+  width:min(420px,88vw); min-height:250px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:18px; padding:32px 24px;
+  border:1px solid rgba(120,180,255,.18);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(12,17,28,.88),rgba(5,7,12,.72));
+  box-shadow:0 24px 80px rgba(0,0,0,.45), inset 0 0 40px rgba(72,232,255,.025);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+}
+.end-feed-mark {
+  width:48px; height:48px; display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(72,232,255,.35); border-radius:50%;
+  color:var(--cyan); font:900 18px/1 'JetBrains Mono',monospace;
+  box-shadow:0 0 22px rgba(72,232,255,.12);
+}
+.end-feed-copy {
+  max-width:350px; color:var(--text);
+  font:900 clamp(15px,4vw,20px)/1.25 'Space Grotesk',sans-serif;
+  letter-spacing:.4px; text-transform:uppercase;
+}
+.end-feed-copy span {
+  display:block; margin-top:10px; color:var(--muted);
+  font:600 10px/1.6 'JetBrains Mono',monospace;
+  letter-spacing:.6px; text-transform:none;
+}
+.end-search-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-height:40px; padding:0 18px; border:1px solid var(--cyan);
+  border-radius:22px; background:rgba(72,232,255,.07); color:var(--cyan);
+  font:800 10px/1 'JetBrains Mono',monospace; letter-spacing:.8px;
+  transition:transform .15s ease,background .15s ease,box-shadow .15s ease;
+}
+.end-search-btn:hover { background:rgba(72,232,255,.14); box-shadow:0 0 20px rgba(72,232,255,.18); }
+.end-search-btn:active { transform:scale(.96); }
+
 </style>
 </head>
 <body>
@@ -629,13 +655,14 @@ select.text-input { background: #080c14; }
 
 <!-- INTERACTIVE END-OF-FEED SCENE -->
 <div id="endOfFeedScene" aria-live="polite">
-  <div class="end-cube-wrap" id="endCubeWrap" aria-label="Interactive 3D object. Drag to rotate." role="button" tabindex="0">
-    <div class="end-cube" id="endCube">
-      <div class="end-face">TYPE</div><div class="end-face">FORGE</div><div class="end-face">NEXT</div>
-      <div class="end-face">POST</div><div class="end-face">SOON</div><div class="end-face">↻</div>
+  <div class="end-feed-card">
+    <div class="end-feed-mark">TF</div>
+    <div class="end-feed-copy">
+      DOOM SCROLLING IS UNHEALTHY
+      <span>Today’s 10 curated posts are complete.<br>If you want to explore the permanent archive, do so at your own risk.</span>
     </div>
+    <button class="end-search-btn" id="btnEndOpenSearch" type="button">OPEN SEARCH ↗</button>
   </div>
-  <div class="end-feed-copy">DOOM SCROLLING IS UNHEALTHY — TAKE A REST<span>ROTATE THIS · YOUR NEXT SPECIAL DROP AWAITS</span></div>
 </div>
 <!-- BOTTOM SETTLED 3-CARD TRAY -->
 <div id="bottomDeckTray">
@@ -1061,10 +1088,7 @@ function markPostViewed() {}
 function markDropCompletionProgress() {}
 
 function updateEndSceneMessage() {
-  const copy = document.querySelector('#endOfFeedScene .end-feed-copy');
-  if (!copy) return;
-  copy.innerHTML = "DOOM SCROLLING IS UNHEALTHY — TAKE A REST" +
-    "<span>TODAY'S 10 CURATED POSTS ARE COMPLETE · SEARCH THE PERMANENT ARCHIVE ANYTIME</span>";
+  // Static special card: keep its message unchanged.
 }
 
 function updateBottomTrayUI() {
@@ -1102,17 +1126,7 @@ async function checkForNewPosts() {
   /* Intentionally empty: the daily feed is manually published, not polled. */
 }
 
-(function initEndCube() {
-  const wrap = document.getElementById('endCubeWrap');
-  const cube = document.getElementById('endCube');
-  if (!wrap || !cube) return;
-  const render = () => cube.style.transform = `rotateX(${endCubeX}deg) rotateY(${endCubeY}deg)`;
-  wrap.addEventListener('pointerdown', e => { endDrag=true; endLastX=e.clientX; endLastY=e.clientY; cube.classList.add('paused'); wrap.setPointerCapture?.(e.pointerId); });
-  wrap.addEventListener('pointermove', e => { if(!endDrag)return; endCubeY += (e.clientX-endLastX)*0.75; endCubeX -= (e.clientY-endLastY)*0.75; endLastX=e.clientX; endLastY=e.clientY; render(); });
-  const stop = () => { endDrag=false; };
-  wrap.addEventListener('pointerup', stop); wrap.addEventListener('pointercancel', stop);
-  wrap.addEventListener('keydown', e => { if(e.key==='ArrowLeft'){endCubeY-=18;render();} if(e.key==='ArrowRight'){endCubeY+=18;render();} if(e.key==='ArrowUp'){endCubeX-=18;render();} if(e.key==='ArrowDown'){endCubeX+=18;render();} });
-})();
+;
 
 function presentCard(index) {
   if (index >= currentBatch.length) return;
@@ -1451,6 +1465,7 @@ const openSearch = () => {
 };
 document.getElementById('btnOpenSearch').onclick = openSearch;
 document.getElementById('btnOpenSearchMobile').onclick = openSearch;
+document.getElementById('btnEndOpenSearch').onclick = openSearch;
 document.getElementById('btnCloseSearch').onclick = () => searchDrawer.classList.remove('open');
 
 function archiveMiniCard(p) {
