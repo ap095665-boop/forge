@@ -534,225 +534,26 @@ select.text-input { background: #080c14; }
   .creator-preview { width: 100% !important; border-right: none !important; border-bottom: 1px solid var(--line); }
 }
 
-/* LIGHTWEIGHT END-OF-FEED INTERACTIVE OBJECT */
+/* END-OF-FEED INTERACTIVE 3D OBJECT */
 #endOfFeedScene {
   position:absolute; inset:0; display:none; align-items:center; justify-content:center;
-  flex-direction:column; gap:20px; z-index:20; text-align:center;
+  flex-direction:column; gap:24px; z-index:20; text-align:center;
   pointer-events:auto;
 }
 #endOfFeedScene.visible { display:flex; }
-.end-feed-copy {
-  max-width:min(360px,82vw); color:var(--text);
-  font:800 11px/1.5 'JetBrains Mono',monospace;
-  letter-spacing:1.2px; text-transform:uppercase; opacity:.9;
-  pointer-events:none;
-}
-.end-feed-copy span {
-  display:block; margin-top:7px; color:var(--dim);
-  font-size:8px; letter-spacing:1px;
-}
-.end-cube-wrap {
-  width:130px; height:130px; display:flex; align-items:center; justify-content:center;
-  touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none;
-}
+.end-feed-copy { max-width:min(360px,82vw); color:var(--text); font:800 11px/1.5 'JetBrains Mono',monospace; letter-spacing:1.2px; text-transform:uppercase; opacity:.9; }
+.end-feed-copy span { display:block; margin-top:7px; color:var(--dim); font-size:8px; letter-spacing:1px; }
+.end-cube-wrap { width:150px; height:150px; perspective:900px; touch-action:none; cursor:grab; user-select:none; }
 .end-cube-wrap:active { cursor:grabbing; }
-.end-cube {
-  width:92px; height:92px; position:relative;
-  transform:rotate(45deg);
-  border:1px solid rgba(255,255,255,.42);
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.015));
-  box-shadow:0 0 24px rgba(72,232,255,.10), inset 0 0 22px rgba(255,255,255,.025);
-  transition:transform .08s linear;
-  will-change:transform;
-}
-.end-cube::before,
-.end-cube::after {
-  content:'';
-  position:absolute;
-  inset:11px;
-  border:1px solid rgba(255,255,255,.25);
-  pointer-events:none;
-}
-.end-cube::after {
-  inset:24px;
-  border-color:rgba(255,255,255,.18);
-}
-.end-cube-label {
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  transform:rotate(-45deg);
-  color:var(--text); font:900 9px/1 'Space Grotesk',sans-serif;
-  letter-spacing:1.5px; pointer-events:none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .end-cube { transition:none; }
-}
-
-/* TYPEFORGE — CINEMATIC BOOT LOADER */
-#tfCinematicLoader{
-  position:fixed;
-  inset:0;
-  z-index:99999;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  background:#050609;
-  color:#fff;
-  opacity:1;
-  visibility:visible;
-  transition:opacity .7s cubic-bezier(.22,1,.36,1),visibility .7s;
-}
-#tfCinematicLoader.tf-loader-done{
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-}
-.tf-loader-vignette{
-  position:absolute;
-  inset:-15%;
-  background:
-    radial-gradient(circle at 50% 50%,rgba(80,220,255,.09),transparent 27%),
-    radial-gradient(circle at 50% 50%,rgba(255,255,255,.025),transparent 48%);
-  animation:tfLoaderBreath 2.8s ease-in-out infinite;
-}
-.tf-loader-grid{
-  position:absolute;
-  inset:-35%;
-  background-image:
-    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
-  background-size:48px 48px;
-  transform:perspective(500px) rotateX(67deg) translateY(13%);
-  transform-origin:center;
-  mask-image:linear-gradient(to bottom,transparent 0%,#000 35%,#000 70%,transparent 100%);
-  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 35%,#000 70%,transparent 100%);
-  animation:tfLoaderGrid 5s linear infinite;
-}
-.tf-loader-orbit{
-  position:absolute;
-  width:min(58vw,330px);
-  height:min(58vw,330px);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:50%;
-  box-shadow:0 0 55px rgba(70,220,255,.06);
-  transform:rotateX(68deg) rotateZ(-18deg);
-  animation:tfLoaderOrbit 4s linear infinite;
-}
-.tf-loader-orbit::before{
-  content:"";
-  position:absolute;
-  width:6px;
-  height:6px;
-  left:50%;
-  top:-3px;
-  border-radius:50%;
-  background:#fff;
-  box-shadow:0 0 12px rgba(255,255,255,.9),0 0 28px rgba(70,220,255,.7);
-}
-.tf-loader-core{
-  position:relative;
-  width:min(68vw,390px);
-  text-align:center;
-  z-index:2;
-}
-.tf-loader-kicker{
-  margin-bottom:18px;
-  font:800 9px/1 "Space Grotesk",sans-serif;
-  letter-spacing:5px;
-  opacity:.5;
-  animation:tfLoaderFadeUp .9s .05s both cubic-bezier(.22,1,.36,1);
-}
-.tf-loader-title{
-  position:relative;
-  display:inline-block;
-  font:900 clamp(34px,10vw,68px)/.9 "Space Grotesk",sans-serif;
-  letter-spacing:-3px;
-  text-transform:uppercase;
-  animation:tfLoaderTitle .95s .15s both cubic-bezier(.16,1,.3,1);
-}
-.tf-loader-title::after{
-  content:"";
-  position:absolute;
-  left:-8%;
-  right:-8%;
-  bottom:-10px;
-  height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
-  transform:scaleX(0);
-  transform-origin:center;
-  animation:tfLoaderLine .8s .8s forwards cubic-bezier(.22,1,.36,1);
-}
-.tf-loader-sub{
-  margin-top:25px;
-  font:600 10px/1 "Space Grotesk",sans-serif;
-  letter-spacing:3px;
-  opacity:.42;
-  animation:tfLoaderFadeUp .8s .55s both cubic-bezier(.22,1,.36,1);
-}
-.tf-loader-progress{
-  width:min(54vw,250px);
-  height:1px;
-  margin:28px auto 0;
-  background:rgba(255,255,255,.1);
-  overflow:hidden;
-  animation:tfLoaderFadeUp .7s .7s both;
-}
-.tf-loader-progress span{
-  display:block;
-  width:100%;
-  height:100%;
-  transform:translateX(-101%);
-  background:linear-gradient(90deg,transparent,#fff,rgba(90,225,255,.9));
-  animation:tfLoaderProgress 1.65s .25s cubic-bezier(.65,0,.35,1) forwards;
-}
-.tf-loader-corner{
-  position:absolute;
-  width:18px;
-  height:18px;
-  border-color:rgba(255,255,255,.24);
-  border-style:solid;
-  opacity:0;
-  animation:tfLoaderCorners .7s .35s forwards;
-}
-.tf-loader-corner.a{top:28px;left:28px;border-width:1px 0 0 1px}
-.tf-loader-corner.b{top:28px;right:28px;border-width:1px 1px 0 0}
-.tf-loader-corner.c{bottom:28px;left:28px;border-width:0 0 1px 1px}
-.tf-loader-corner.d{bottom:28px;right:28px;border-width:0 1px 1px 0}
-
-@keyframes tfLoaderBreath{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.06);opacity:1}}
-@keyframes tfLoaderGrid{from{transform:perspective(500px) rotateX(67deg) translateY(13%) translateX(0)}to{transform:perspective(500px) rotateX(67deg) translateY(13%) translateX(48px)}}
-@keyframes tfLoaderOrbit{to{transform:rotateX(68deg) rotateZ(342deg)}}
-@keyframes tfLoaderTitle{from{opacity:0;transform:translateY(22px) scale(.96);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}
-@keyframes tfLoaderFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@keyframes tfLoaderLine{to{transform:scaleX(1)}}
-@keyframes tfLoaderProgress{to{transform:translateX(101%)}}
-@keyframes tfLoaderCorners{to{opacity:1}}
-@media (prefers-reduced-motion:reduce){
-  #tfCinematicLoader *{animation-duration:.01ms!important;animation-iteration-count:1!important}
-}
-
+.end-cube { position:relative; width:90px; height:90px; margin:30px auto; transform-style:preserve-3d; transform:rotateX(-18deg) rotateY(28deg); animation:endCubeIdle 12s linear infinite; }
+.end-cube.paused { animation-play-state:paused; }
+.end-face { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,.42); background:rgba(255,255,255,.035); color:var(--text); font:900 9px/1 'Space Grotesk',sans-serif; letter-spacing:1px; text-shadow:0 0 14px rgba(255,255,255,.35); backdrop-filter:blur(4px); }
+.end-face:nth-child(1){transform:translateZ(45px)} .end-face:nth-child(2){transform:rotateY(180deg) translateZ(45px)} .end-face:nth-child(3){transform:rotateY(90deg) translateZ(45px)} .end-face:nth-child(4){transform:rotateY(-90deg) translateZ(45px)} .end-face:nth-child(5){transform:rotateX(90deg) translateZ(45px)} .end-face:nth-child(6){transform:rotateX(-90deg) translateZ(45px)}
+@keyframes endCubeIdle { from{transform:rotateX(-18deg) rotateY(28deg)} to{transform:rotateX(342deg) rotateY(388deg)} }
+@media (prefers-reduced-motion: reduce){ .end-cube{animation:none;} }
 </style>
 </head>
 <body>
-
-<!-- TYPEFORGE CINEMATIC START LOADER -->
-<div id="tfCinematicLoader" aria-label="Loading TypeForge">
-  <div class="tf-loader-vignette"></div>
-  <div class="tf-loader-grid"></div>
-  <div class="tf-loader-orbit"></div>
-  <div class="tf-loader-corner a"></div>
-  <div class="tf-loader-corner b"></div>
-  <div class="tf-loader-corner c"></div>
-  <div class="tf-loader-corner d"></div>
-  <div class="tf-loader-core">
-    <div class="tf-loader-kicker">PERMANENT KINETIC WALL</div>
-    <div class="tf-loader-title">TYPE FORGE</div>
-    <div class="tf-loader-sub">INITIALIZING THE STREAM</div>
-    <div class="tf-loader-progress"><span></span></div>
-  </div>
-</div>
-
 
 <div id="topbar">
   <div class="brand-group hud-element">
@@ -783,12 +584,13 @@ select.text-input { background: #080c14; }
 
 <!-- INTERACTIVE END-OF-FEED SCENE -->
 <div id="endOfFeedScene" aria-live="polite">
-  <div class="end-cube-wrap" id="endCubeWrap" aria-label="Interactive object. Drag to rotate." role="button" tabindex="0">
+  <div class="end-cube-wrap" id="endCubeWrap" aria-label="Interactive 3D object. Drag to rotate." role="button" tabindex="0">
     <div class="end-cube" id="endCube">
-      <div class="end-cube-label">TYPE FORGE</div>
+      <div class="end-face">TYPE</div><div class="end-face">FORGE</div><div class="end-face">NEXT</div>
+      <div class="end-face">POST</div><div class="end-face">SOON</div><div class="end-face">↻</div>
     </div>
   </div>
-  <div class="end-feed-copy">LEAVE THE SITE OR ROTATE THIS UNTIL THE NEXT POST ARRIVES<span>DRAG / SWIPE TO ROTATE</span></div>
+  <div class="end-feed-copy">DOOM SCROLLING IS UNHEALTHY — TAKE A REST<span>ROTATE THIS · YOUR NEXT SPECIAL DROP AWAITS</span></div>
 </div>
 <!-- BOTTOM SETTLED 3-CARD TRAY -->
 <div id="bottomDeckTray">
@@ -1144,33 +946,118 @@ let isFetching = false;
 let currentCardNode = null;
 let isTransitioning = false;
 
-// LOCAL VIEW MARKER: normal feed never presents a post this browser has already viewed.
-// Stored only on the user's device; it does not touch Supabase or the Cloudflare feed.
-const VIEWED_POSTS_KEY = 'typeforge_viewed_posts_v1';
+/* DAILY 3-DROP VIEWING GATE */
+const TYPEFORGE_DROP_TIMES = ["09:00", "15:00", "21:00"];
+const TYPEFORGE_VIEWED_KEY = "typeforge_viewed_post_ids_v1";
+const TYPEFORGE_DROP_STATE_KEY = "typeforge_daily_drop_state_v1";
 let viewedPostIds = new Set();
+let dailyDropState = null;
+let isDropViewing = true;
 
-try {
-  const savedViewed = JSON.parse(localStorage.getItem(VIEWED_POSTS_KEY) || '[]');
-  if (Array.isArray(savedViewed)) viewedPostIds = new Set(savedViewed.filter(Boolean).map(String));
-} catch (e) {
-  viewedPostIds = new Set();
+function localDateKey(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
-function isPostViewed(id) {
-  return !!id && viewedPostIds.has(String(id));
+function loadViewingState() {
+  try {
+    const rawViewed = JSON.parse(localStorage.getItem(TYPEFORGE_VIEWED_KEY) || "[]");
+    viewedPostIds = new Set(Array.isArray(rawViewed) ? rawViewed.filter(Boolean) : []);
+  } catch (_) { viewedPostIds = new Set(); }
+
+  const today = localDateKey();
+  try {
+    const saved = JSON.parse(localStorage.getItem(TYPEFORGE_DROP_STATE_KEY) || "null");
+    if (saved && saved.date === today && Number.isInteger(saved.completed)) {
+      dailyDropState = { date: today, completed: Math.max(0, Math.min(3, saved.completed)), pendingIds: Array.isArray(saved.pendingIds) ? saved.pendingIds.filter(Boolean) : [] };
+    } else {
+      dailyDropState = { date: today, completed: 0, pendingIds: [] };
+      localStorage.setItem(TYPEFORGE_DROP_STATE_KEY, JSON.stringify(dailyDropState));
+    }
+  } catch (_) {
+    dailyDropState = { date: today, completed: 0, pendingIds: [] };
+  }
+  reconcileDailyDropState();
+}
+
+function reconcileDailyDropState() {
+  if (!dailyDropState) return;
+  if (!Array.isArray(dailyDropState.pendingIds)) dailyDropState.pendingIds = [];
+  while (dailyDropState.pendingIds.length && dailyDropState.pendingIds.every(id => viewedPostIds.has(id))) {
+    dailyDropState.completed = Math.min(3, Number(dailyDropState.completed || 0) + 1);
+    dailyDropState.pendingIds = [];
+  }
+}
+
+function persistViewingState() {
+  try {
+    localStorage.setItem(TYPEFORGE_VIEWED_KEY, JSON.stringify(Array.from(viewedPostIds)));
+    localStorage.setItem(TYPEFORGE_DROP_STATE_KEY, JSON.stringify(dailyDropState));
+  } catch (_) {}
+}
+
+function dropTimeMinutes(index) {
+  const [h, m] = TYPEFORGE_DROP_TIMES[index].split(":").map(Number);
+  return h * 60 + m;
+}
+
+function currentMinutes() {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+function nextDropIndex() {
+  return Math.min(3, Number(dailyDropState?.completed || 0));
+}
+
+function dropUnlocked(index = nextDropIndex()) {
+  return index < 3 && currentMinutes() >= dropTimeMinutes(index);
 }
 
 function markPostViewed(id) {
-  if (!id) return;
-  const key = String(id);
-  if (viewedPostIds.has(key)) return;
-  viewedPostIds.add(key);
-  try {
-    localStorage.setItem(VIEWED_POSTS_KEY, JSON.stringify([...viewedPostIds]));
-  } catch (e) {
-    // If storage is unavailable/full, keep the in-memory marker for this session.
+  if (!id || !isDropViewing) return;
+  if (viewedPostIds.has(id)) return;
+  viewedPostIds.add(id);
+  persistViewingState();
+}
+
+function markDropCompletedIfNeeded() {
+  if (!isDropViewing || !dailyDropState || activeBatch.length === 0) return;
+  if (activeBatch.every(card => card?.id && viewedPostIds.has(card.id))) {
+    const next = Math.min(3, Number(dailyDropState.completed || 0) + 1);
+    if (next !== dailyDropState.completed) {
+      dailyDropState.completed = next;
+      dailyDropState.pendingIds = [];
+      persistViewingState();
+    }
   }
 }
+
+function formatNextDrop(index) {
+  if (index >= 3) return "ALL 3 DROPS COMPLETED FOR TODAY";
+  return `NEXT DROP · ${TYPEFORGE_DROP_TIMES[index]}`;
+}
+
+function updateEndSceneMessage() {
+  const copy = document.querySelector("#endOfFeedScene .end-feed-copy");
+  if (!copy) return;
+  const idx = nextDropIndex();
+  if (idx >= 3) {
+    copy.innerHTML = "DOOM SCROLLING IS UNHEALTHY — TAKE A REST" +
+      "<span>ALL 3 DROPS COMPLETED · COME BACK TOMORROW</span>";
+    return;
+  }
+  if (!dropUnlocked(idx)) {
+    copy.innerHTML = "DOOM SCROLLING IS UNHEALTHY — TAKE A REST" +
+      `<span>I HAVE A SPECIAL DROP FOR YOU · ${formatNextDrop(idx)}</span>`;
+  } else {
+    copy.innerHTML = "ROTATE THIS UNTIL THE NEXT POST ARRIVES" +
+      `<span>DROP ${idx + 1} IS READY · 10 POSTS MAX</span>`;
+  }
+}
+
 
 function updateBottomTrayUI() {
   const tray = document.getElementById('bottomDeckTray');
@@ -1220,30 +1107,71 @@ async function loadNextTriad(autoPresentFirst = true) {
 
   try {
     await initStaticFeed();
+    loadViewingState();
 
-    while (feedPosition < feedManifest.shards.length) {
-      const shardMeta = feedManifest.shards[feedPosition];
-      const shard = await loadFeedShard(shardMeta.file);
+    const dropIndex = nextDropIndex();
+    if (dropIndex >= 3 || !dropUnlocked(dropIndex)) {
+      hasMore = false;
+      if (!currentCardNode) showEndOfFeedScene();
+      return;
+    }
 
-      if (feedOffset >= shard.length) {
-        feedPosition += 1;
-        feedOffset = 0;
-        continue;
+    isDropViewing = true;
+
+    // Resume an unfinished drop exactly where the visitor left it.
+    if (Array.isArray(dailyDropState.pendingIds) && dailyDropState.pendingIds.length) {
+      const pending = [];
+      for (const id of dailyDropState.pendingIds) {
+        if (viewedPostIds.has(id)) continue;
+        let card = feedCardMap.get(id);
+        if (!card) {
+          const meta = feedCardIndex?.[id];
+          const file = typeof meta === 'string' ? meta : meta?.file;
+          if (file) {
+            const shard = await loadFeedShard(file);
+            card = shard.find(x => x?.id === id);
+          }
+        }
+        if (card) pending.push(card);
       }
-
-      const nextThree = shard.slice(feedOffset, feedOffset + 3);
-      feedOffset += nextThree.length;
-
-      const seen = new Set(currentBatch.map(x => x?.id).filter(Boolean));
-      // Skip every post already marked as viewed on this device.
-      currentBatch = nextThree.filter(x => x?.id && !seen.has(x.id) && !isPostViewed(x.id));
-
-      if (currentBatch.length) {
-        hasMore = feedOffset < shard.length || feedPosition < feedManifest.shards.length - 1;
+      if (pending.length) {
+        currentBatch = pending.slice(0, 10);
+        hasMore = true;
         activeBatchIndex = -1;
         if (autoPresentFirst) presentCard(0);
         return;
       }
+      dailyDropState.pendingIds = [];
+      persistViewingState();
+    }
+
+    const candidates = [];
+
+    while (feedPosition < feedManifest.shards.length && candidates.length < 10) {
+      const shardMeta = feedManifest.shards[feedPosition];
+      const shard = await loadFeedShard(shardMeta.file);
+
+      while (feedOffset < shard.length && candidates.length < 10) {
+        const card = shard[feedOffset++];
+        if (card?.id && !viewedPostIds.has(card.id)) candidates.push(card);
+      }
+
+      if (feedOffset >= shard.length) {
+        feedPosition += 1;
+        feedOffset = 0;
+      }
+    }
+
+    currentBatch = candidates.slice(0, 10);
+
+    if (currentBatch.length) {
+      dailyDropState.pendingIds = currentBatch.map(card => card.id).filter(Boolean);
+      persistViewingState();
+
+      hasMore = true;
+      activeBatchIndex = -1;
+      if (autoPresentFirst) presentCard(0);
+      return;
     }
 
     hasMore = false;
@@ -1253,15 +1181,19 @@ async function loadNextTriad(autoPresentFirst = true) {
     toast('Feed unavailable — please retry');
   } finally {
     isFetching = false;
-    btnNextSwipe.textContent = 'NEXT INSCRIPTION';
+    btnNextSwipe.textContent = 'SWIPE UP ▲';
+    updateEndSceneMessage();
   }
 }
 
 let endFeedTimer = null;
+let endCubeX = -18, endCubeY = 28;
+let endDrag = false, endLastX = 0, endLastY = 0;
 
 function showEndOfFeedScene() {
   const scene = document.getElementById('endOfFeedScene');
   if (scene) scene.classList.add('visible');
+  updateEndSceneMessage();
   if (!endFeedTimer) endFeedTimer = setInterval(checkForNewPosts, 30000);
 }
 
@@ -1271,12 +1203,20 @@ function hideEndOfFeedScene() {
 }
 
 async function checkForNewPosts() {
+  loadViewingState();
+  updateEndSceneMessage();
   if (!feedManifest) return;
+
+  const dropIndex = nextDropIndex();
+  if (dropIndex >= 3 || !dropUnlocked(dropIndex)) return;
+  if (currentCardNode || isFetching) return;
+
   try {
     const res = await fetch(`${STATIC_FEED_BASE}/manifest.json?_=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) return;
     const latest = await res.json();
-    if (Number(latest.total_cards || 0) > Number(feedManifest.total_cards || 0)) {
+    const changed = Number(latest.total_cards || 0) !== Number(feedManifest.total_cards || 0) || latest.generated_at !== feedManifest.generated_at;
+    if (changed) {
       feedManifest = latest;
       feedCardIndex = {};
       const idxRes = await fetch(`${STATIC_FEED_BASE}/card-index.json?_=${Date.now()}`, { cache: 'no-store' });
@@ -1284,9 +1224,10 @@ async function checkForNewPosts() {
       feedShardCache.clear();
       feedCardMap.clear();
       feedPosition = 0; feedOffset = 0; hasMore = true; currentBatch = []; activeBatchIndex = -1;
-      hideEndOfFeedScene();
-      await loadNextTriad(true);
     }
+
+    hideEndOfFeedScene();
+    await loadNextTriad(true);
   } catch (e) { console.debug('Waiting for next post', e); }
 }
 
@@ -1294,37 +1235,12 @@ async function checkForNewPosts() {
   const wrap = document.getElementById('endCubeWrap');
   const cube = document.getElementById('endCube');
   if (!wrap || !cube) return;
-
-  let rotation = 45;
-  let dragging = false;
-  let lastX = 0;
-
-  const render = () => {
-    cube.style.transform = `rotate(${rotation}deg)`;
-  };
-
-  wrap.addEventListener('pointerdown', e => {
-    dragging = true;
-    lastX = e.clientX;
-    wrap.setPointerCapture?.(e.pointerId);
-  });
-
-  wrap.addEventListener('pointermove', e => {
-    if (!dragging) return;
-    rotation += (e.clientX - lastX) * 0.55;
-    lastX = e.clientX;
-    render();
-  });
-
-  const stop = () => { dragging = false; };
-  wrap.addEventListener('pointerup', stop);
-  wrap.addEventListener('pointercancel', stop);
-  wrap.addEventListener('lostpointercapture', stop);
-
-  wrap.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft') { rotation -= 15; render(); }
-    if (e.key === 'ArrowRight') { rotation += 15; render(); }
-  });
+  const render = () => cube.style.transform = `rotateX(${endCubeX}deg) rotateY(${endCubeY}deg)`;
+  wrap.addEventListener('pointerdown', e => { endDrag=true; endLastX=e.clientX; endLastY=e.clientY; cube.classList.add('paused'); wrap.setPointerCapture?.(e.pointerId); });
+  wrap.addEventListener('pointermove', e => { if(!endDrag)return; endCubeY += (e.clientX-endLastX)*0.75; endCubeX -= (e.clientY-endLastY)*0.75; endLastX=e.clientX; endLastY=e.clientY; render(); });
+  const stop = () => { endDrag=false; };
+  wrap.addEventListener('pointerup', stop); wrap.addEventListener('pointercancel', stop);
+  wrap.addEventListener('keydown', e => { if(e.key==='ArrowLeft'){endCubeY-=18;render();} if(e.key==='ArrowRight'){endCubeY+=18;render();} if(e.key==='ArrowUp'){endCubeX-=18;render();} if(e.key==='ArrowDown'){endCubeX+=18;render();} });
 })();
 
 function presentCard(index) {
@@ -1335,10 +1251,7 @@ function presentCard(index) {
   updateBottomTrayUI();
 
   const cardData = currentBatch[index];
-
-  // Mark as viewed the moment it is actually presented, so reloads start from fresh posts.
   markPostViewed(cardData?.id);
-
   const newCard = createCardElement(cardData);
 
   activeSlot.appendChild(newCard);
@@ -1386,15 +1299,13 @@ function dismissActiveAndAdvance() {
       presentCard(nextIndex);
     }, 120);
   } else {
-    // 3 cards completed -> request the next triad, or show the interactive end scene
+    // 10 posts completed -> unlock only the next scheduled drop.
     currentCardNode = null;
-    activeBatchIndex = 3;
-
-    if (!hasMore) {
-      showEndOfFeedScene();
-    } else {
-      loadNextTriad(true);
-    }
+    activeBatchIndex = currentBatch.length;
+    markDropCompletedIfNeeded();
+    hasMore = false;
+    updateEndSceneMessage();
+    showEndOfFeedScene();
   }
 }
 
@@ -1647,6 +1558,7 @@ async function jumpToCard(id) {
       if (shardFile) data = (await loadFeedShard(shardFile)).find(x => x.id === id);
     }
     if (data) {
+      isDropViewing = false;
       const u = new URL(location.href);
       u.search = '';
       u.hash = '';
@@ -1680,6 +1592,8 @@ addEventListener('DOMContentLoaded', async () => {
   try {
     await initStaticFeed();
 
+    loadViewingState();
+
     if (id) {
       let data = feedCardMap.get(id);
       if (!data) {
@@ -1688,6 +1602,7 @@ addEventListener('DOMContentLoaded', async () => {
         if (shardFile) data = (await loadFeedShard(shardFile)).find(x => x.id === id);
       }
       if (data) {
+        isDropViewing = false;
         if (location.hash) {
           const clean = new URL(location.href);
           clean.hash = '';
@@ -1706,6 +1621,7 @@ addEventListener('DOMContentLoaded', async () => {
       toast('Inscription not found');
     }
 
+    isDropViewing = true;
     feedPosition = 0;
     feedOffset = 0;
     currentBatch = [];
@@ -1716,34 +1632,5 @@ addEventListener('DOMContentLoaded', async () => {
   }
 });
 </script>
-
-<script>
-/* TYPEFORGE — cinematic loader: waits for initial DOM + first paint, then exits once */
-(function(){
-  const loader = document.getElementById('tfCinematicLoader');
-  if (!loader) return;
-
-  const dismiss = () => {
-    if (loader.classList.contains('tf-loader-done')) return;
-    loader.classList.add('tf-loader-done');
-    setTimeout(() => loader.remove(), 760);
-  };
-
-  const boot = () => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setTimeout(dismiss, 1150);
-      });
-    });
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, {once:true});
-  } else {
-    boot();
-  }
-})();
-</script>
-
 </body>
-  </html>
+</html>
