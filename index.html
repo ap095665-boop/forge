@@ -569,21 +569,19 @@ select.text-input { background: #080c14; }
 #btnClosePermalinkViewer{position:fixed;top:max(14px,env(safe-area-inset-top));left:14px;z-index:180;display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:0 11px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(5,7,12,.48);color:var(--text);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:700 9px/1 'JetBrains Mono',monospace;letter-spacing:.7px;cursor:pointer}
 #btnClosePermalinkViewer span:first-child{font-size:13px}
 #btnClosePermalinkViewer:active{transform:scale(.96);opacity:.75}
-/* END-OF-FEED INTERACTIVE 3D OBJECT */
+/* END-OF-FEED SPECIAL SEARCH CARD */
 #endOfFeedScene {
   position:absolute; inset:0; display:none; align-items:center; justify-content:center;
-  flex-direction:column; gap:18px; z-index:20; text-align:center;
-  pointer-events:auto; padding:24px;
+  flex-direction:column; z-index:20; text-align:center; pointer-events:auto; padding:24px;
 }
 #endOfFeedScene.visible { display:flex; }
 .end-feed-card {
   width:min(420px,88vw); min-height:250px;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:18px; padding:32px 24px;
-  border:1px solid rgba(120,180,255,.18);
-  border-radius:18px;
-  background:linear-gradient(145deg,rgba(12,17,28,.88),rgba(5,7,12,.72));
-  box-shadow:0 24px 80px rgba(0,0,0,.45), inset 0 0 40px rgba(72,232,255,.025);
+  border:1px solid rgba(120,180,255,.18); border-radius:18px;
+  background:linear-gradient(145deg,rgba(12,17,28,.90),rgba(5,7,12,.82));
+  box-shadow:0 24px 80px rgba(0,0,0,.45),inset 0 0 40px rgba(72,232,255,.025);
   backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
 }
 .end-feed-mark {
@@ -611,7 +609,6 @@ select.text-input { background: #080c14; }
 }
 .end-search-btn:hover { background:rgba(72,232,255,.14); box-shadow:0 0 20px rgba(72,232,255,.18); }
 .end-search-btn:active { transform:scale(.96); }
-
 </style>
 </head>
 <body>
@@ -653,13 +650,13 @@ select.text-input { background: #080c14; }
 
 
 
-<!-- INTERACTIVE END-OF-FEED SCENE -->
+<!-- END-OF-FEED SPECIAL SEARCH CARD -->
 <div id="endOfFeedScene" aria-live="polite">
   <div class="end-feed-card">
     <div class="end-feed-mark">TF</div>
     <div class="end-feed-copy">
       DOOM SCROLLING IS UNHEALTHY
-      <span>Today’s 10 curated posts are complete.<br>If you want to explore the permanent archive, do so at your own risk.</span>
+      <span>You've reached the end of today's 10 posts.<br>If you want to explore search, do so at your own risk.</span>
     </div>
     <button class="end-search-btn" id="btnEndOpenSearch" type="button">OPEN SEARCH ↗</button>
   </div>
@@ -1088,7 +1085,7 @@ function markPostViewed() {}
 function markDropCompletionProgress() {}
 
 function updateEndSceneMessage() {
-  // Static special card: keep its message unchanged.
+  /* The end-of-feed card has fixed copy and is intentionally not rewritten. */
 }
 
 function updateBottomTrayUI() {
@@ -1102,9 +1099,6 @@ function trayEndState() {
   document.getElementById('bottomDeckTray').classList.add('end-state');
 }
 
-let endFeedTimer = null;
-let endCubeX = -18, endCubeY = 28;
-let endDrag = false, endLastX = 0, endLastY = 0;
 
 function showEndOfFeedScene() {
   // The end scene is valid ONLY when the curated feed has truly reached
@@ -1126,7 +1120,6 @@ async function checkForNewPosts() {
   /* Intentionally empty: the daily feed is manually published, not polled. */
 }
 
-;
 
 function presentCard(index) {
   if (index >= currentBatch.length) return;
@@ -1161,6 +1154,7 @@ function presentCard(index) {
 }
 
 function dismissActiveAndAdvance() {
+  if (document.getElementById('endOfFeedScene')?.classList.contains('visible')) return;
   if (isFetching || isTransitioning) return;
 
   /* ARCHIVE VIEWER IS SEPARATE FROM THE MAIN FEED. Its swipe/wheel events
@@ -1193,28 +1187,14 @@ function dismissActiveAndAdvance() {
     markDropCompletionProgress();
     hasMore = false;
 
-    /* IMPORTANT: immediately continue with any already-released pending posts.
-       This is what prevents the black/empty screen after post 10. */
-    setTimeout(async () => {
-      try {
-        refreshReleasedDrops();
-        await releaseAvailablePosts();
-        const pending = await cardsFromPending(10);
-        if (pending.length) {
-          currentBatch = pending;
-          activeBatchIndex = -1;
-          hasMore = true;
-          presentCard(0);
-          return;
-        }
-      } catch (e) {
-        console.debug('Next batch waiting', e);
-      }
+    /* END OF TODAY'S 10-POST MAIN FEED.
+       Show the special search card instead of leaving a blank screen. */
+    setTimeout(() => {
+      /* The last card's transition lock must be released before the
+         end-of-feed scene is allowed to render. */
+      isTransitioning = false;
       if (isDropViewing && !currentCardNode) {
-        updateEndSceneMessage();
         showEndOfFeedScene();
-      } else {
-        hideEndOfFeedScene();
       }
     }, 520);
   }
@@ -1223,7 +1203,8 @@ function dismissActiveAndAdvance() {
 /* DESK / MOUSE WHEEL GESTURE */
 let wheelLock = false;
 window.addEventListener('wheel', e => {
-  if (e.target.closest('#creatorDrawer, #searchDrawer, #archiveViewer')) return;
+  if (e.target.closest('#creatorDrawer, #searchDrawer, #archiveViewer, #endOfFeedScene')) return;
+  if (document.getElementById('endOfFeedScene')?.classList.contains('visible')) return;
   if (e.deltaY > 28 && !wheelLock && !isTransitioning) {
     wheelLock = true;
     dismissActiveAndAdvance();
@@ -1244,6 +1225,7 @@ let mainSwipeActive = false;
 let mainSwipeLocked = false;
 
 activeSlot.addEventListener('pointerdown', e => {
+  if (document.getElementById('endOfFeedScene')?.classList.contains('visible')) return;
   if (archiveViewerOpen || permalinkViewerOpen || isTransitioning || isFetching) return;
   if (e.pointerType === 'mouse') return;
   mainSwipeActive = true;
@@ -1252,6 +1234,10 @@ activeSlot.addEventListener('pointerdown', e => {
 }, { passive: true });
 
 activeSlot.addEventListener('pointerup', e => {
+  if (document.getElementById('endOfFeedScene')?.classList.contains('visible')) {
+    mainSwipeActive = false;
+    return;
+  }
   if (!mainSwipeActive) return;
   mainSwipeActive = false;
   if (archiveViewerOpen || permalinkViewerOpen || isTransitioning || isFetching || mainSwipeLocked) return;
