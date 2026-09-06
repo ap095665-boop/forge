@@ -533,6 +533,60 @@ select.text-input { background: #080c14; }
   .creator-box { flex-direction: column; overflow-y: auto; }
   .creator-preview { width: 100% !important; border-right: none !important; border-bottom: 1px solid var(--line); }
 }
+
+/* LIGHTWEIGHT END-OF-FEED INTERACTIVE OBJECT */
+#endOfFeedScene {
+  position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+  flex-direction:column; gap:20px; z-index:20; text-align:center;
+  pointer-events:auto;
+}
+#endOfFeedScene.visible { display:flex; }
+.end-feed-copy {
+  max-width:min(360px,82vw); color:var(--text);
+  font:800 11px/1.5 'JetBrains Mono',monospace;
+  letter-spacing:1.2px; text-transform:uppercase; opacity:.9;
+  pointer-events:none;
+}
+.end-feed-copy span {
+  display:block; margin-top:7px; color:var(--dim);
+  font-size:8px; letter-spacing:1px;
+}
+.end-cube-wrap {
+  width:130px; height:130px; display:flex; align-items:center; justify-content:center;
+  touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none;
+}
+.end-cube-wrap:active { cursor:grabbing; }
+.end-cube {
+  width:92px; height:92px; position:relative;
+  transform:rotate(45deg);
+  border:1px solid rgba(255,255,255,.42);
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.015));
+  box-shadow:0 0 24px rgba(72,232,255,.10), inset 0 0 22px rgba(255,255,255,.025);
+  transition:transform .08s linear;
+  will-change:transform;
+}
+.end-cube::before,
+.end-cube::after {
+  content:'';
+  position:absolute;
+  inset:11px;
+  border:1px solid rgba(255,255,255,.25);
+  pointer-events:none;
+}
+.end-cube::after {
+  inset:24px;
+  border-color:rgba(255,255,255,.18);
+}
+.end-cube-label {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  transform:rotate(-45deg);
+  color:var(--text); font:900 9px/1 'Space Grotesk',sans-serif;
+  letter-spacing:1.5px; pointer-events:none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .end-cube { transition:none; }
+}
 </style>
 </head>
 <body>
@@ -562,6 +616,17 @@ select.text-input { background: #080c14; }
   <div class="active-card-slot" id="activeSlot"></div>
 </div>
 
+
+
+<!-- INTERACTIVE END-OF-FEED SCENE -->
+<div id="endOfFeedScene" aria-live="polite">
+  <div class="end-cube-wrap" id="endCubeWrap" aria-label="Interactive object. Drag to rotate." role="button" tabindex="0">
+    <div class="end-cube" id="endCube">
+      <div class="end-cube-label">TYPE FORGE</div>
+    </div>
+  </div>
+  <div class="end-feed-copy">LEAVE THE SITE OR ROTATE THIS UNTIL THE NEXT POST ARRIVES<span>DRAG / SWIPE TO ROTATE</span></div>
+</div>
 <!-- BOTTOM SETTLED 3-CARD TRAY -->
 <div id="bottomDeckTray">
   <div class="deck-slots" id="deckSlotWrap">
@@ -916,6 +981,34 @@ let isFetching = false;
 let currentCardNode = null;
 let isTransitioning = false;
 
+// LOCAL VIEW MARKER: normal feed never presents a post this browser has already viewed.
+// Stored only on the user's device; it does not touch Supabase or the Cloudflare feed.
+const VIEWED_POSTS_KEY = 'typeforge_viewed_posts_v1';
+let viewedPostIds = new Set();
+
+try {
+  const savedViewed = JSON.parse(localStorage.getItem(VIEWED_POSTS_KEY) || '[]');
+  if (Array.isArray(savedViewed)) viewedPostIds = new Set(savedViewed.filter(Boolean).map(String));
+} catch (e) {
+  viewedPostIds = new Set();
+}
+
+function isPostViewed(id) {
+  return !!id && viewedPostIds.has(String(id));
+}
+
+function markPostViewed(id) {
+  if (!id) return;
+  const key = String(id);
+  if (viewedPostIds.has(key)) return;
+  viewedPostIds.add(key);
+  try {
+    localStorage.setItem(VIEWED_POSTS_KEY, JSON.stringify([...viewedPostIds]));
+  } catch (e) {
+    // If storage is unavailable/full, keep the in-memory marker for this session.
+  }
+}
+
 function updateBottomTrayUI() {
   const tray = document.getElementById('bottomDeckTray');
   tray.classList.remove('end-state');
@@ -979,7 +1072,8 @@ async function loadNextTriad(autoPresentFirst = true) {
       feedOffset += nextThree.length;
 
       const seen = new Set(currentBatch.map(x => x?.id).filter(Boolean));
-      currentBatch = nextThree.filter(x => x?.id && !seen.has(x.id));
+      // Skip every post already marked as viewed on this device.
+      currentBatch = nextThree.filter(x => x?.id && !seen.has(x.id) && !isPostViewed(x.id));
 
       if (currentBatch.length) {
         hasMore = feedOffset < shard.length || feedPosition < feedManifest.shards.length - 1;
@@ -990,7 +1084,7 @@ async function loadNextTriad(autoPresentFirst = true) {
     }
 
     hasMore = false;
-    if (!currentCardNode) toast('No more inscriptions');
+    if (!currentCardNode) showEndOfFeedScene();
   } catch (e) {
     console.error('Static feed load failed:', e);
     toast('Feed unavailable — please retry');
@@ -1000,13 +1094,88 @@ async function loadNextTriad(autoPresentFirst = true) {
   }
 }
 
+let endFeedTimer = null;
+
+function showEndOfFeedScene() {
+  const scene = document.getElementById('endOfFeedScene');
+  if (scene) scene.classList.add('visible');
+  if (!endFeedTimer) endFeedTimer = setInterval(checkForNewPosts, 30000);
+}
+
+function hideEndOfFeedScene() {
+  const scene = document.getElementById('endOfFeedScene');
+  if (scene) scene.classList.remove('visible');
+}
+
+async function checkForNewPosts() {
+  if (!feedManifest) return;
+  try {
+    const res = await fetch(`${STATIC_FEED_BASE}/manifest.json?_=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const latest = await res.json();
+    if (Number(latest.total_cards || 0) > Number(feedManifest.total_cards || 0)) {
+      feedManifest = latest;
+      feedCardIndex = {};
+      const idxRes = await fetch(`${STATIC_FEED_BASE}/card-index.json?_=${Date.now()}`, { cache: 'no-store' });
+      if (idxRes.ok) feedCardIndex = await idxRes.json();
+      feedShardCache.clear();
+      feedCardMap.clear();
+      feedPosition = 0; feedOffset = 0; hasMore = true; currentBatch = []; activeBatchIndex = -1;
+      hideEndOfFeedScene();
+      await loadNextTriad(true);
+    }
+  } catch (e) { console.debug('Waiting for next post', e); }
+}
+
+(function initEndCube() {
+  const wrap = document.getElementById('endCubeWrap');
+  const cube = document.getElementById('endCube');
+  if (!wrap || !cube) return;
+
+  let rotation = 45;
+  let dragging = false;
+  let lastX = 0;
+
+  const render = () => {
+    cube.style.transform = `rotate(${rotation}deg)`;
+  };
+
+  wrap.addEventListener('pointerdown', e => {
+    dragging = true;
+    lastX = e.clientX;
+    wrap.setPointerCapture?.(e.pointerId);
+  });
+
+  wrap.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    rotation += (e.clientX - lastX) * 0.55;
+    lastX = e.clientX;
+    render();
+  });
+
+  const stop = () => { dragging = false; };
+  wrap.addEventListener('pointerup', stop);
+  wrap.addEventListener('pointercancel', stop);
+  wrap.addEventListener('lostpointercapture', stop);
+
+  wrap.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') { rotation -= 15; render(); }
+    if (e.key === 'ArrowRight') { rotation += 15; render(); }
+  });
+})();
+
 function presentCard(index) {
   if (index >= currentBatch.length) return;
+  hideEndOfFeedScene();
 
   activeBatchIndex = index;
   updateBottomTrayUI();
 
   const cardData = currentBatch[index];
+
+  // Mark as viewed the moment it is actually presented, so reloads start from fresh posts.
+  markPostViewed(cardData?.id);
+
   const newCard = createCardElement(cardData);
 
   activeSlot.appendChild(newCard);
@@ -1054,10 +1223,15 @@ function dismissActiveAndAdvance() {
       presentCard(nextIndex);
     }, 120);
   } else {
-    // 3 cards completed -> safely request the next triad
+    // 3 cards completed -> request the next triad, or show the interactive end scene
     currentCardNode = null;
     activeBatchIndex = 3;
-    loadNextTriad(true);
+
+    if (!hasMore) {
+      showEndOfFeedScene();
+    } else {
+      loadNextTriad(true);
+    }
   }
 }
 
@@ -1380,4 +1554,4 @@ addEventListener('DOMContentLoaded', async () => {
 });
 </script>
 </body>
-</html>
+  </html>
