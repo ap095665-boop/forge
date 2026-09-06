@@ -918,7 +918,8 @@ function trayEndState() {
 
 async function loadFeedShard(shardFile) {
   if (feedShardCache.has(shardFile)) return feedShardCache.get(shardFile);
-  const res = await fetch(`${STATIC_FEED_BASE}/${encodeURIComponent(shardFile)}`);
+  const feedVersion = encodeURIComponent(feedManifest?.generated_at || feedManifest?.version || 'live');
+  const res = await fetch(`${STATIC_FEED_BASE}/${encodeURIComponent(shardFile)}?v=${feedVersion}`);
   if (!res.ok) throw new Error(`Feed shard ${shardFile} failed (${res.status})`);
   const data = await res.json();
   if (!Array.isArray(data)) throw new Error(`Invalid feed shard: ${shardFile}`);
@@ -1289,7 +1290,8 @@ async function jumpToCard(id) {
     await initStaticFeed();
     let data = feedCardMap.get(id);
     if (!data) {
-      const shardFile = feedCardIndex[id];
+      const shardMeta = feedCardIndex[id];
+      const shardFile = typeof shardMeta === 'string' ? shardMeta : shardMeta?.file;
       if (shardFile) data = (await loadFeedShard(shardFile)).find(x => x.id === id);
     }
     if (data) {
@@ -1329,7 +1331,8 @@ addEventListener('DOMContentLoaded', async () => {
     if (id) {
       let data = feedCardMap.get(id);
       if (!data) {
-        const shardFile = feedCardIndex[id];
+        const shardMeta = feedCardIndex[id];
+        const shardFile = typeof shardMeta === 'string' ? shardMeta : shardMeta?.file;
         if (shardFile) data = (await loadFeedShard(shardFile)).find(x => x.id === id);
       }
       if (data) {
