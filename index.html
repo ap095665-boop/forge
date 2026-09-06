@@ -1598,7 +1598,11 @@ function closePermalinkViewer(){
   endSceneSuppressed=false;
   if(currentCardNode)hideEndOfFeedScene();
   else if(isDropViewing && activeBatchIndex>=currentBatch.length)showEndOfFeedScene();
-  const u=new URL(location.href); u.search=''; u.hash=''; history.replaceState({type:'typeforge-feed'},'',u.href);
+  const u=new URL(location.href);
+  u.search='';
+  u.hash='';
+  if (/\/(?:p|post)\/[^/]+\/?$/i.test(u.pathname)) u.pathname=u.pathname.replace(/\/(?:p|post)\/[^/]+\/?$/i,'/');
+  history.replaceState({type:'typeforge-feed'},'',u.href);
 }
 document.getElementById('btnClosePermalinkViewer').addEventListener('click',()=>closePermalinkViewer());
 
@@ -1662,16 +1666,26 @@ const TYPEFORGE_BOOT_FALLBACK = [
   {"bg":"warp","id":"e07b1459-595c-49c2-b655-df9b3df12a0e","anim":"kinetic_slam","theme":"crimson","tagline":"PERMANENT STATEMENT","headline":"CREATE ONCE\nREMAINS FOREVER","subtitle":"Hardware-accelerated typography on the web ↓","serial_no":54,"created_at":"2026-09-04T08:54:08.216786+00:00","accent_word":"FOREVER","outbound_url":null}
 ];
 
-async function bootTypeForgeFeed() {
-  if (typeforgeBootComplete || typeforgeBootStarted) return;
-  typeforgeBootStarted = true;
-
+function getPermalinkIdFromLocation() {
   const params = new URLSearchParams(location.search);
-  let id = params.get('p');
-  if (!id) id = location.hash.match(/^#p=(.+)$/)?.[1] || null;
+  let id = params.get('p') || params.get('post') || '';
 
-  // Always start the MAIN curated feed independently. A public archive post
-  // is never substituted into currentBatch.
+  if (!id) {
+    const hashMatch = location.hash.match(/^#(?:p|post)=(.+)$/i);
+    if (hashMatch) id = decodeURIComponent(hashMatch[1]);
+  }
+
+  // Also support clean permalink paths such as /p/<uuid> and /post/<uuid>.
+  if (!id) {
+    const pathMatch = location.pathname.match(/\/(?:p|post)\/([^/]+)\/?$/i);
+    if (pathMatch) id = decodeURIComponent(pathMatch[1]);
+  }
+
+  return id || null;
+}
+
+async function bootMainFeedOnly() {
+  // MAIN FEED is allowed to bootstrap/fallback independently.
   if (!currentCardNode && !currentBatch.length) {
     isDropViewing = true;
     endSceneSuppressed = false;
@@ -1686,7 +1700,6 @@ async function bootTypeForgeFeed() {
 
   try {
     const data = await loadCuratedFeed();
-
     isDropViewing = true;
     endSceneSuppressed = false;
     feedPosition = 0;
@@ -1697,7 +1710,6 @@ async function bootTypeForgeFeed() {
     hasMore = currentBatch.length > 0;
     hideEndOfFeedScene();
 
-    // Keep the MAIN feed authoritative and mounted.
     requestAnimationFrame(() => {
       if (hadFallbackCard && currentCardNode) {
         currentCardNode.remove();
@@ -1705,33 +1717,65 @@ async function bootTypeForgeFeed() {
       }
       if (!currentCardNode && currentBatch.length) presentCard(0);
     });
-
-    // If a deep link points to an archive post, open it in the SEPARATE
-    // archive viewer above the main feed. The main feed state is untouched.
-    if (id) {
-      const postData = await resolvePermalinkPost(id);
-      if (postData) {
-        openPermalinkViewer(postData);
-      } else {
-        const clean = new URL(location.href); clean.search=''; clean.hash='';
-        history.replaceState({type:'typeforge-feed'},'',clean.href);
-        toast('Inscription not found');
-      }
-    }
-
-    typeforgeBootComplete = true;
   } catch (e) {
-    console.error('Static feed bootstrap failed:', e);
-    typeforgeBootStarted = false;
-    clearTimeout(typeforgeBootRetryTimer);
-    typeforgeBootRetryTimer = setTimeout(bootTypeForgeFeed, 700);
+    console.error('Main feed bootstrap failed:', e);
+    // The embedded fallback is already visible; do not block permalink loading.
   }
 }
 
+async function bootPermalinkOnly(id) {
+  if (!id) return;
+
+  try {
+    const postData = await resolvePermalinkPost(id);
+    if (postData) {
+      // IMPORTANT: permalink is a completely independent layer.
+      // It never replaces currentBatch/currentCardNode and never waits for main feed.
+      requestAnimationFrame(() => openPermalinkViewer(postData));
+      return;
+    }
+
+    const clean = new URL(location.href);
+    clean.search = '';
+    clean.hash = '';
+    if (/\/(?:p|post)\/[^/]+\/?$/i.test(clean.pathname)) {
+      clean.pathname = clean.pathname.replace(/\/(?:p|post)\/[^/]+\/?$/i, '/');
+    }
+    history.replaceState({type:'typeforge-feed'}, '', clean.href);
+    toast('Inscription not found');
+  } catch (e) {
+    console.error('Permalink bootstrap failed:', e);
+    toast('Permalink unavailable');
+  }
+}
+
+async function bootTypeForgeFeed() {
+  if (typeforgeBootComplete || typeforgeBootStarted) return;
+  typeforgeBootStarted = true;
+
+  const id = getPermalinkIdFromLocation();
+
+  // Start BOTH layers independently. A slow/failing main feed can NEVER block
+  // a direct permalink from opening.
+  bootMainFeedOnly();
+  if (id) bootPermalinkOnly(id);
+
+  typeforgeBootComplete = true;
+}
+
 addEventListener('popstate',()=>{
-  const id=new URL(location.href).searchParams.get('p');
-  if(permalinkViewerOpen && !id) closePermalinkViewer();
-  if(archiveViewerOpen && !id) closeArchiveViewer(true);
+  const id = getPermalinkIdFromLocation();
+
+  if (permalinkViewerOpen && !id) {
+    closePermalinkViewer();
+    return;
+  }
+
+  if (!permalinkViewerOpen && id) {
+    bootPermalinkOnly(id);
+  }
+
+  if (archiveViewerOpen && !id) closeArchiveViewer(true);
 });
 
 addEventListener('DOMContentLoaded', () => {
