@@ -1013,6 +1013,7 @@ let isTransitioning = false;
 let isDropViewing = true;
 // Prevent delayed feed/end-scene callbacks from leaking into archive-post view.
 let endSceneSuppressed = false;
+let endFeedTimer = null;
 // Search/archive is a completely separate viewer; it never replaces main-feed state.
 let archiveViewerOpen = false;
 let archiveViewerNode = null;
@@ -1882,8 +1883,6 @@ async function bootMainFeedOnly() {
     const data = await loadCuratedFeed();
     isDropViewing = true;
     endSceneSuppressed = false;
-    feedPosition = 0;
-    feedOffset = 0;
     const hadFallbackCard = !!currentCardNode;
     currentBatch = data;
     activeBatchIndex = -1;
