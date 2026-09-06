@@ -587,9 +587,172 @@ select.text-input { background: #080c14; }
 @media (prefers-reduced-motion: reduce) {
   .end-cube { transition:none; }
 }
+
+/* TYPEFORGE — CINEMATIC BOOT LOADER */
+#tfCinematicLoader{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  background:#050609;
+  color:#fff;
+  opacity:1;
+  visibility:visible;
+  transition:opacity .7s cubic-bezier(.22,1,.36,1),visibility .7s;
+}
+#tfCinematicLoader.tf-loader-done{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.tf-loader-vignette{
+  position:absolute;
+  inset:-15%;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(80,220,255,.09),transparent 27%),
+    radial-gradient(circle at 50% 50%,rgba(255,255,255,.025),transparent 48%);
+  animation:tfLoaderBreath 2.8s ease-in-out infinite;
+}
+.tf-loader-grid{
+  position:absolute;
+  inset:-35%;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:48px 48px;
+  transform:perspective(500px) rotateX(67deg) translateY(13%);
+  transform-origin:center;
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 35%,#000 70%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 35%,#000 70%,transparent 100%);
+  animation:tfLoaderGrid 5s linear infinite;
+}
+.tf-loader-orbit{
+  position:absolute;
+  width:min(58vw,330px);
+  height:min(58vw,330px);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:50%;
+  box-shadow:0 0 55px rgba(70,220,255,.06);
+  transform:rotateX(68deg) rotateZ(-18deg);
+  animation:tfLoaderOrbit 4s linear infinite;
+}
+.tf-loader-orbit::before{
+  content:"";
+  position:absolute;
+  width:6px;
+  height:6px;
+  left:50%;
+  top:-3px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 12px rgba(255,255,255,.9),0 0 28px rgba(70,220,255,.7);
+}
+.tf-loader-core{
+  position:relative;
+  width:min(68vw,390px);
+  text-align:center;
+  z-index:2;
+}
+.tf-loader-kicker{
+  margin-bottom:18px;
+  font:800 9px/1 "Space Grotesk",sans-serif;
+  letter-spacing:5px;
+  opacity:.5;
+  animation:tfLoaderFadeUp .9s .05s both cubic-bezier(.22,1,.36,1);
+}
+.tf-loader-title{
+  position:relative;
+  display:inline-block;
+  font:900 clamp(34px,10vw,68px)/.9 "Space Grotesk",sans-serif;
+  letter-spacing:-3px;
+  text-transform:uppercase;
+  animation:tfLoaderTitle .95s .15s both cubic-bezier(.16,1,.3,1);
+}
+.tf-loader-title::after{
+  content:"";
+  position:absolute;
+  left:-8%;
+  right:-8%;
+  bottom:-10px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  transform:scaleX(0);
+  transform-origin:center;
+  animation:tfLoaderLine .8s .8s forwards cubic-bezier(.22,1,.36,1);
+}
+.tf-loader-sub{
+  margin-top:25px;
+  font:600 10px/1 "Space Grotesk",sans-serif;
+  letter-spacing:3px;
+  opacity:.42;
+  animation:tfLoaderFadeUp .8s .55s both cubic-bezier(.22,1,.36,1);
+}
+.tf-loader-progress{
+  width:min(54vw,250px);
+  height:1px;
+  margin:28px auto 0;
+  background:rgba(255,255,255,.1);
+  overflow:hidden;
+  animation:tfLoaderFadeUp .7s .7s both;
+}
+.tf-loader-progress span{
+  display:block;
+  width:100%;
+  height:100%;
+  transform:translateX(-101%);
+  background:linear-gradient(90deg,transparent,#fff,rgba(90,225,255,.9));
+  animation:tfLoaderProgress 1.65s .25s cubic-bezier(.65,0,.35,1) forwards;
+}
+.tf-loader-corner{
+  position:absolute;
+  width:18px;
+  height:18px;
+  border-color:rgba(255,255,255,.24);
+  border-style:solid;
+  opacity:0;
+  animation:tfLoaderCorners .7s .35s forwards;
+}
+.tf-loader-corner.a{top:28px;left:28px;border-width:1px 0 0 1px}
+.tf-loader-corner.b{top:28px;right:28px;border-width:1px 1px 0 0}
+.tf-loader-corner.c{bottom:28px;left:28px;border-width:0 0 1px 1px}
+.tf-loader-corner.d{bottom:28px;right:28px;border-width:0 1px 1px 0}
+
+@keyframes tfLoaderBreath{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.06);opacity:1}}
+@keyframes tfLoaderGrid{from{transform:perspective(500px) rotateX(67deg) translateY(13%) translateX(0)}to{transform:perspective(500px) rotateX(67deg) translateY(13%) translateX(48px)}}
+@keyframes tfLoaderOrbit{to{transform:rotateX(68deg) rotateZ(342deg)}}
+@keyframes tfLoaderTitle{from{opacity:0;transform:translateY(22px) scale(.96);filter:blur(8px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes tfLoaderFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes tfLoaderLine{to{transform:scaleX(1)}}
+@keyframes tfLoaderProgress{to{transform:translateX(101%)}}
+@keyframes tfLoaderCorners{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  #tfCinematicLoader *{animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+
 </style>
 </head>
 <body>
+
+<!-- TYPEFORGE CINEMATIC START LOADER -->
+<div id="tfCinematicLoader" aria-label="Loading TypeForge">
+  <div class="tf-loader-vignette"></div>
+  <div class="tf-loader-grid"></div>
+  <div class="tf-loader-orbit"></div>
+  <div class="tf-loader-corner a"></div>
+  <div class="tf-loader-corner b"></div>
+  <div class="tf-loader-corner c"></div>
+  <div class="tf-loader-corner d"></div>
+  <div class="tf-loader-core">
+    <div class="tf-loader-kicker">PERMANENT KINETIC WALL</div>
+    <div class="tf-loader-title">TYPE FORGE</div>
+    <div class="tf-loader-sub">INITIALIZING THE STREAM</div>
+    <div class="tf-loader-progress"><span></span></div>
+  </div>
+</div>
+
 
 <div id="topbar">
   <div class="brand-group hud-element">
@@ -1553,5 +1716,34 @@ addEventListener('DOMContentLoaded', async () => {
   }
 });
 </script>
+
+<script>
+/* TYPEFORGE — cinematic loader: waits for initial DOM + first paint, then exits once */
+(function(){
+  const loader = document.getElementById('tfCinematicLoader');
+  if (!loader) return;
+
+  const dismiss = () => {
+    if (loader.classList.contains('tf-loader-done')) return;
+    loader.classList.add('tf-loader-done');
+    setTimeout(() => loader.remove(), 760);
+  };
+
+  const boot = () => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTimeout(dismiss, 1150);
+      });
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, {once:true});
+  } else {
+    boot();
+  }
+})();
+</script>
+
 </body>
   </html>
