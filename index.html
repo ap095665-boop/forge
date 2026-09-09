@@ -663,8 +663,8 @@ select.text-input { background: #080c14; }
   <div class="end-feed-card">
     <div class="end-feed-mark">TF</div>
     <div class="end-feed-copy">
-      DOOM SCROLLING IS UNHEALTHY
-      <span>You've reached the end of today's 10 posts.<br>If you want to explore search, do so at your own risk.</span>
+      END OF DOOMSCROLLING
+      <span>You've reached the end of today's 10 posts.<br>If you want to explore search, click the button below.</span>
     </div>
     <button class="end-search-btn" id="btnEndOpenSearch" type="button">OPEN SEARCH ↗</button>
   </div>
@@ -693,7 +693,7 @@ select.text-input { background: #080c14; }
       </div>
       
       <div class="field-group"><label class="field-label">TAGLINE BADGE</label><input class="text-input" id="inTag" value="PERMANENT STATEMENT" maxlength="40"></div>
-      <div class="field-group"><label class="field-label">HEADLINE (MULTI-LINE)</label><textarea class="text-input" id="inHead" rows="2" maxlength="80">CREATE ONCE
+      <div class="field-group"><label class="field-label">HEADLINE (MULTI-LINE)</label><textarea class="text-input" id="inHead" rows="2">CREATE ONCE
 REMAINS FOREVER</textarea></div>
       <div class="field-group"><label class="field-label">ACCENT WORD (GLOWS)</label><input class="text-input" id="inWord" value="FOREVER" maxlength="20"></div>
       <div class="field-group"><label class="field-label">SUBTITLE</label><textarea class="text-input" id="inSub" rows="5" data-max-words="500">Hardware-accelerated typography on the web ↓</textarea></div>
@@ -864,6 +864,16 @@ document.addEventListener('keydown', e => {
 function wordLimited(value, maxWords = 500) {
   const words = String(value || '').trim().split(/\s+/).filter(Boolean);
   return words.length > maxWords ? words.slice(0, maxWords).join(' ') : String(value || '');
+}
+
+function headlineLimited(value, maxWords = 30) {
+  const input = String(value || '');
+  const matches = [...input.matchAll(/\S+/g)];
+  if (matches.length <= maxWords) return input;
+
+  // Preserve the user's existing spaces/newlines while cutting only
+  // everything from the 31st word onward.
+  return input.slice(0, matches[maxWords - 1].index + matches[maxWords - 1][0].length);
 }
 
 function createCardElement(p, isPreview = false) {
@@ -1299,9 +1309,17 @@ function preview() {
   }
 }
 
-for (let id of ['inTag', 'inHead', 'inWord', 'inUrl']) {
+for (let id of ['inTag', 'inWord', 'inUrl']) {
   document.getElementById(id).addEventListener('input', preview);
 }
+
+const headlineInput = document.getElementById('inHead');
+headlineInput.addEventListener('input', () => {
+  const limited = headlineLimited(headlineInput.value, 30);
+  if (limited !== headlineInput.value) headlineInput.value = limited;
+  preview();
+});
+
 const subtitleInput = document.getElementById('inSub');
 subtitleInput.addEventListener('input', () => {
   const limited = wordLimited(subtitleInput.value, 500);
