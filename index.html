@@ -6,8 +6,7 @@
 <title>TYPE FORGE — Kinetic Engine</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Space+Grotesk:wght@500;700;900&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap');
 :root {
   --void: #05070c; --panel-solid: #0c111c;
   --line: rgba(120,180,255,0.14); --line-strong: rgba(120,180,255,0.3);
@@ -413,8 +412,17 @@ input, select, textarea { color: var(--text); background: transparent; border: n
 .kinetic-headline .word-wrapper { display: inline-block; white-space: pre; will-change: transform, opacity; transform: translate3d(0,0,0); }
 .kinetic-headline .accent-word { color: var(--card-accent); text-shadow: 0 0 28px var(--card-accent-50); }
 .kinetic-footer { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.kinetic-subtitle { font-size: 13.5px; font-weight: 600; text-align: center; color: rgba(255,255,255,0.85); text-shadow: 0 2px 8px rgba(0,0,0,0.8); max-width: 90%; }
-.visit-btn {
+..kinetic-subtitle {
+  font-family: 'Great Vibes', cursive;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: center;
+  color: rgba(255,255,255,0.92);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  max-width: 92%;
+}
+  .visit-btn {
   display: inline-flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
   font-weight: 700; padding: 7px 16px; border-radius: 20px; text-decoration: none; background: rgba(255,255,255,0.06);
   border: 1px solid var(--card-accent); color: var(--card-accent); box-shadow: 0 0 12px var(--card-accent-20); transition: 0.15s;
