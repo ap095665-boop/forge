@@ -618,17 +618,15 @@ select.text-input { background: #080c14; }
 #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(12,17,28,.72); border: 1px solid rgba(120,180,255,.16); padding: 6px 11px; border-radius: var(--r); font-size: 10px; opacity: 0; transition: opacity .25s ease, transform .25s ease; z-index: 300; pointer-events: none; }
 #toast.show { opacity: .18; transform: translateX(-50%) translateY(0); }
 
-/* FULL SUBTITLE READER — CREATED ONLY WHEN USED */
-/* READ-MORE POPUP: per-word glitch/type reveal — subtitle only */
-#subtitleReaderText .subtitle-reveal-word { display:inline-block; opacity:0; transform:translateY(.35em) skewX(-8deg); filter:blur(5px); clip-path:inset(0 100% 0 0); will-change:transform,opacity,filter,clip-path; }
-#subtitleReaderText .subtitle-reveal-word.is-revealed { animation:subtitleWordGlitchReveal .52s cubic-bezier(.2,.75,.25,1) forwards; animation-delay:calc(var(--word-index) * 55ms); }
-@keyframes subtitleWordGlitchReveal {
-0%{opacity:0;transform:translateX(-10px) skewX(-14deg);filter:blur(6px);clip-path:inset(0 100% 0 0);text-shadow:4px 0 #00e5ff,-4px 0 #ff2bd6}
-35%{opacity:1;transform:translateX(3px) skewX(6deg);filter:blur(1px);clip-path:inset(0 12% 0 0);text-shadow:-3px 0 #00e5ff,3px 0 #ff2bd6}
-55%{transform:translateX(-2px) skewX(-3deg);clip-path:inset(0);text-shadow:2px 0 #00e5ff,-2px 0 #ff2bd6}
-75%{transform:translateX(1px);filter:blur(0);text-shadow:-1px 0 #00e5ff,1px 0 #ff2bd6}
-100%{opacity:1;transform:none;filter:none;clip-path:inset(0);text-shadow:none}}
-@media (prefers-reduced-motion:reduce){#subtitleReaderText .subtitle-reveal-word{opacity:1;transform:none;filter:none;clip-path:none}#subtitleReaderText .subtitle-reveal-word.is-revealed{animation:none}}
+/* FULL SUBTITLE READER — SIMPLE TEXT, NO WORD ANIMATION */
+#subtitleReaderText {
+  user-select: text;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text);
+}
 
 #subtitleReader {
   position: fixed; inset: 0; z-index: 500;
@@ -639,7 +637,8 @@ select.text-input { background: #080c14; }
   opacity: 0; pointer-events: none;
   transition: opacity .2s ease;
 }
-#subtitleReader.open { opacity: 1; pointer-events: auto; }
+#subtitleReader.open {
+  display:flex; opacity: 1; pointer-events: auto; }
 .subtitle-reader-box {
   width: min(680px, 100%);
   max-height: min(82dvh, 760px);
@@ -1125,21 +1124,15 @@ const subtitleReaderText = document.getElementById('subtitleReaderText');
 const btnCloseSubtitleReader = document.getElementById('btnCloseSubtitleReader');
 
 function openSubtitleReader(text) {
-  const parts = String(text || '').split(/(\s+)/);
-  let wordIndex = 0;
-  subtitleReaderText.innerHTML = parts.map(part => {
-    if (/^\s+$/.test(part)) return part;
-    return `<span class="subtitle-reveal-word" style="--word-index:${wordIndex++}">${esc(part)}</span>`;
-  }).join('');
+  subtitleReaderText.textContent = String(text || '');
   subtitleReader.classList.add('open');
   subtitleReader.setAttribute('aria-hidden', 'false');
-  requestAnimationFrame(() => {
-    subtitleReaderText.querySelectorAll('.subtitle-reveal-word').forEach(word => word.classList.add('is-revealed'));
-  });
 }
+
 function closeSubtitleReader() {
   subtitleReader.classList.remove('open');
   subtitleReader.setAttribute('aria-hidden', 'true');
+  subtitleReaderText.textContent = '';
 }
 btnCloseSubtitleReader.onclick = closeSubtitleReader;
 subtitleReader.addEventListener('click', e => {
