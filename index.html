@@ -131,34 +131,74 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   overflow: hidden;
 }
 .kinetic-subtitle {
-  position: relative;
-  overflow: hidden;
-  max-height: 4.4em;
-  line-height: 1.45;
-  width: 100%;
+  width: min(88%, 430px);
+  margin: 14px auto 0;
+  text-align: center;
 }
-.kinetic-subtitle .subtitle-preview {
+.kinetic-subtitle .subtitle-glass {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255,255,255,.20);
+  border-radius: 16px;
+  background: rgba(255,255,255,.075);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 8px 24px rgba(0,0,0,.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: rgba(255,255,255,.92);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .25s ease, background .25s ease, border-color .25s ease;
+}
+.kinetic-subtitle .subtitle-glass:hover {
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.105);
+  border-color: rgba(255,255,255,.30);
+}
+.subtitle-preview {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   overflow: hidden;
+  width: 100%;
+  font-family: 'Great Vibes', cursive;
+  font-size: 20px;
+  line-height: 1.18;
+  font-weight: 400;
+  letter-spacing: .01em;
+  transition: opacity .45s ease, transform .45s ease;
 }
-.read-more-inline {
-  display: none;
+.subtitle-readmore {
   position: absolute;
-  z-index: 3;
-  right: 0;
-  bottom: 0;
-  padding: 0 0 0 7px;
-  color: var(--card-accent);
-  font: 800 10px/1.45 'JetBrains Mono', monospace;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  white-space: nowrap;
-  background: linear-gradient(90deg, transparent, var(--card-bg) 22%);
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .45s ease, transform .45s ease;
 }
-.read-more-inline.is-visible { display: inline-flex; }
-.read-more-inline:hover { filter: brightness(1.2); }
+.kinetic-subtitle .subtitle-glass.is-readmore .subtitle-preview {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+.kinetic-subtitle .subtitle-glass.is-readmore .subtitle-readmore {
+  opacity: 1;
+  transform: translateY(0);
+}
+.kinetic-subtitle .subtitle-glass:focus-visible {
+  outline: 2px solid rgba(255,255,255,.65);
+  outline-offset: 3px;
+}
 .read-more-btn {
   display: inline-flex;
   align-items: center;
@@ -1180,17 +1220,14 @@ function createCardElement(p, isPreview = false) {
         <div class="kinetic-header"><button type="button" class="kinetic-badge" data-tagline="${esc(p.tagline || 'DECLARATION')}" aria-label="Explore posts tagged ${esc(p.tagline || 'DECLARATION')}">${esc(p.tagline || 'DECLARATION')}</button></div>
         <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
         <div class="kinetic-footer">
-          ${p.subtitle ? `<div class="kinetic-subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><button type="button" class="read-more-inline" aria-label="Read full subtitle">READ MORE ↗</button></div>` : ''}
+          ${p.subtitle ? `<div class="kinetic-subtitle"><button type="button" class="subtitle-glass" aria-label="Read full subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><span class="subtitle-readmore">READ MORE ↗</span></button></div>` : ''}
         </div>
       </div>
     `;
-    const readMore = previewWrap.querySelector('.read-more-inline');
-    const subtitlePreview = previewWrap.querySelector('.subtitle-preview');
-    if (readMore && subtitlePreview) {
-      requestAnimationFrame(() => {
-        if (subtitlePreview.scrollHeight > subtitlePreview.clientHeight + 1) readMore.classList.add('is-visible');
-      });
-      readMore.onclick = () => openSubtitleReader(p.subtitle);
+    const subtitleGlass = previewWrap.querySelector('.subtitle-glass');
+    if (subtitleGlass) {
+      subtitleGlass.onclick = () => openSubtitleReader(p.subtitle);
+      window.setTimeout(() => subtitleGlass.classList.add('is-readmore'), 3500);
     }
     bindTaglineBadges(previewWrap);
     return previewWrap;
@@ -1214,19 +1251,16 @@ function createCardElement(p, isPreview = false) {
       <div class="kinetic-header"><button type="button" class="kinetic-badge" data-tagline="${esc(p.tagline || 'DECLARATION')}" aria-label="Explore posts tagged ${esc(p.tagline || 'DECLARATION')}">${esc(p.tagline || 'DECLARATION')}</button></div>
       <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
       <div class="kinetic-footer">
-        ${p.subtitle ? `<div class="kinetic-subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><button type="button" class="read-more-inline" aria-label="Read full subtitle">READ MORE ↗</button></div>` : ''}
+        ${p.subtitle ? `<div class="kinetic-subtitle"><button type="button" class="subtitle-glass" aria-label="Read full subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><span class="subtitle-readmore">READ MORE ↗</span></button></div>` : ''}
         ${u ? `<a class="visit-btn" href="${esc(u)}" target="_blank" rel="noopener">VISIT SOURCE ↗</a>` : ''}
       </div>
       <button class="post-share-btn" aria-label="Share post" title="Share post" type="button" onclick="sharePost('${esc(p.id || '')}')">↗</button>
     </div>
   `;
-  const readMore = card.querySelector('.read-more-inline');
-  const subtitlePreview = card.querySelector('.subtitle-preview');
-  if (readMore && subtitlePreview) {
-    requestAnimationFrame(() => {
-      if (subtitlePreview.scrollHeight > subtitlePreview.clientHeight + 1) readMore.classList.add('is-visible');
-    });
-    readMore.onclick = () => openSubtitleReader(p.subtitle);
+  const subtitleGlass = card.querySelector('.subtitle-glass');
+  if (subtitleGlass) {
+    subtitleGlass.onclick = () => openSubtitleReader(p.subtitle);
+    window.setTimeout(() => subtitleGlass.classList.add('is-readmore'), 3500);
   }
   bindTaglineBadges(card);
   card._accent = p.accent_word || p.accentWord || '';
