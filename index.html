@@ -1429,7 +1429,7 @@ function showEndOfFeedScene() {
   const scene = document.getElementById('endOfFeedScene');
   if (scene) scene.classList.add('visible');
   updateEndSceneMessage();
-  if (!endFeedTimer) endFeedTimer = setInterval(checkForNewPosts, 15000);
+  
 }
 
 function hideEndOfFeedScene() {
@@ -1444,6 +1444,8 @@ async function checkForNewPosts() {
 
 function presentCard(index) {
   if (index >= currentBatch.length) return;
+  const mainStage=document.getElementById('mainStage');
+  if(mainStage){ mainStage.style.display='flex'; mainStage.setAttribute('aria-hidden','false'); }
   hideEndOfFeedScene();
 
   activeBatchIndex = index;
@@ -1577,6 +1579,48 @@ activeSlot.addEventListener('pointerup', e => {
 activeSlot.addEventListener('pointercancel', () => {
   mainSwipeActive = false;
 }, { passive: true });
+
+/* SINGLE FEED LAYER MANAGER — only one feed/viewer may be mounted at a time. */
+function closeAllFeedLayers(except=''){
+  const layers={main:document.getElementById('mainStage'),search:document.getElementById('searchDrawer'),archive:document.getElementById('archiveViewer'),tag:document.getElementById('tagViewer'),permalink:document.getElementById('permalinkViewer')};
+
+  // Strict single-layer rule: when a feed/viewer becomes inactive, remove its
+  // animated card DOM instead of merely hiding it. Keep only the lightweight
+  // data arrays so returning to that layer does not require a refetch.
+  if(except!=='main'){
+    if(currentCardNode){ currentCardNode.remove(); currentCardNode=null; }
+    const mainSlot=document.getElementById('activeSlot'); if(mainSlot) mainSlot.replaceChildren();
+  }
+  for(const [name,el] of Object.entries(layers)){
+    if(!el||name===except) continue;
+    el.style.display='none';
+    el.classList.remove('open');
+    el.setAttribute('aria-hidden','true');
+  }
+  if(except!=='archive'){
+    archiveViewerOpen=false; searchFeedCards=[]; searchFeedIndex=-1; searchFeedNodes=[];
+    if(archiveViewerNode)archiveViewerNode.remove(); archiveViewerNode=null;
+    const x=document.getElementById('archiveViewerSlot'); if(x)x.replaceChildren();
+  }
+  if(except!=='tag'){
+    tagViewerOpen=false; tagFeedCards=[]; tagFeedIndex=-1; tagFeedNodes=[];
+    const x=document.getElementById('tagViewerSlot'); if(x)x.replaceChildren();
+  }
+  if(except!=='permalink'){
+    permalinkViewerOpen=false; permalinkViewerCard=null;
+    if(permalinkViewerNode)permalinkViewerNode.remove(); permalinkViewerNode=null;
+    const x=document.getElementById('permalinkViewerSlot'); if(x)x.replaceChildren();
+  }
+}
+function showOnlyMainFeed(){
+  closeAllFeedLayers('main');
+  const el=document.getElementById('mainStage');
+  el.style.display='flex';
+  el.setAttribute('aria-hidden','false');
+}
+function showOnlyArchiveFeed(){ closeAllFeedLayers('archive'); }
+function showOnlyTagFeed(){ closeAllFeedLayers('tag'); }
+function showOnlyPermalinkFeed(){ closeAllFeedLayers('permalink'); }
 
 /* =========================================================================
    6. SHARE
@@ -1774,6 +1818,8 @@ function renderSearchCards(results) {
 }
 
 const openSearch = () => {
+  closeAllFeedLayers('search');
+  searchDrawer.style.display='flex';
   clearTagSearchHeader();
   searchInput.value = '';
   searchDrawer.classList.add('open');
@@ -1783,7 +1829,14 @@ const openSearch = () => {
 document.getElementById('btnOpenSearch').onclick = openSearch;
 document.getElementById('btnOpenSearchMobile').onclick = openSearch;
 document.getElementById('btnEndOpenSearch').onclick = openSearch;
-document.getElementById('btnCloseSearch').onclick = () => { searchDrawer.classList.remove('open'); clearTagSearchHeader(); searchInput.value=''; };
+document.getElementById('btnCloseSearch').onclick = () => {
+  searchDrawer.classList.remove('open');
+  searchDrawer.style.display='none';
+  clearTagSearchHeader();
+  searchInput.value='';
+  showOnlyMainFeed();
+  if(!currentCardNode && currentBatch.length) presentCard(Math.max(0, Math.min(activeBatchIndex, currentBatch.length-1)));
+};
 
 function archiveMiniCard(p) {
   const title = esc((p.headline || 'UNTITLED').replace(/\n/g,' '));
@@ -1840,6 +1893,8 @@ function filterExactTaglineCards(tagline){
 function openTaglineSearch(tagline){
   const raw=String(tagline||'').trim();
   if(!raw) return;
+  closeAllFeedLayers('search');
+  searchDrawer.style.display='flex';
   activeTaglineFilter=raw;
   searchDrawer.classList.add('open');
   searchInput.value=raw;
@@ -1864,10 +1919,15 @@ function renderTagSearchHeader(tagline){
     searchResults.parentElement.insertBefore(head,searchResults);
   }
   head.innerHTML=`<div class="tag-search-label">TAG FILTER · <strong>${esc(tagline)}</strong></div><button type="button" class="tag-feed-btn" id="btnOpenTagFeed">OPEN TAG FEED ↗</button>`;
-  head.querySelector('#btnOpenTagFeed').onclick=()=>{
-    const cards=filterExactTaglineCards(tagline);
+  head.querySelector('#btnOpenTagFeed').onclick=async()=>{
+    let cards=filterExactTaglineCards(tagline);
+    if(!cards.length && !Array.isArray(allArchiveCards)){
+      await loadAllArchiveCards();
+      cards=filterExactTaglineCards(tagline);
+    }
     if(!cards.length){ toast('NO POSTS WITH THIS TAG'); return; }
     searchDrawer.classList.remove('open');
+    searchDrawer.style.display='none';
     openTagFeedAt(0,cards,tagline);
   };
 }
@@ -1968,6 +2028,7 @@ function openSearchCard(data){
    from loading/rebuilding the entire archive as animated DOM at once.
    ========================================================================= */
 function openArchiveViewerAt(index, updateHistory=true){
+  showOnlyArchiveFeed();
   const viewer=document.getElementById('archiveViewer');
   const slot=document.getElementById('archiveViewerSlot');
   if(!viewer || !slot || !Array.isArray(allArchiveCards) || !allArchiveCards.length) return;
@@ -1982,6 +2043,7 @@ function openArchiveViewerAt(index, updateHistory=true){
   hideEndOfFeedScene();
   renderSearchFeedWindow(true);
 
+  viewer.style.display='block';
   viewer.classList.add('open');
   viewer.setAttribute('aria-hidden','false');
 
@@ -2154,13 +2216,14 @@ function renderTagFeedWindow(){
 
 function openTagFeedAt(index,cards,tagline){
   if(!Array.isArray(cards)||!cards.length)return;
+  showOnlyTagFeed();
   const viewer=document.getElementById('tagViewer');
   if(!viewer)return;
   tagViewerOpen=true; tagFeedCards=cards; tagFeedIndex=Math.max(0,Math.min(index,cards.length-1));
   tagFeedTransitioning=false; activeTaglineFilter=tagline||'';
   document.getElementById('tagViewerLabel').textContent=`TAG · ${tagline||'UNKNOWN'}`;
   hideEndOfFeedScene(); renderTagFeedWindow();
-  viewer.classList.add('open'); viewer.setAttribute('aria-hidden','false');
+  viewer.style.display='block'; viewer.classList.add('open'); viewer.setAttribute('aria-hidden','false');
 }
 
 function advanceTagFeed(){
@@ -2182,6 +2245,8 @@ function closeTagFeed(){
   if(slot)slot.replaceChildren();
   if(viewer){viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');}
   activeTaglineFilter='';
+  showOnlyMainFeed();
+  if(!currentCardNode && currentBatch.length) presentCard(Math.max(0, Math.min(activeBatchIndex, currentBatch.length-1)));
 }
 
 document.getElementById('btnCloseTagViewer').addEventListener('click',closeTagFeed);
@@ -2201,6 +2266,7 @@ document.getElementById('tagViewerSlot').addEventListener('pointerup',e=>{
 document.getElementById('tagViewerSlot').addEventListener('pointercancel',()=>tagFeedSwipeActive=false);
 
 function openPermalinkViewer(data){
+  showOnlyPermalinkFeed();
   const viewer=document.getElementById('permalinkViewer'), slot=document.getElementById('permalinkViewerSlot');
   if(!viewer || !slot || !data || !data.id) return;
   permalinkViewerOpen=true; permalinkViewerCard=data;
@@ -2255,6 +2321,9 @@ function closeArchiveViewer(fromHistory=false){
   // Main feed was never replaced, so simply reveal its existing state.
   if(currentCardNode)hideEndOfFeedScene();
   else if(isDropViewing && activeBatchIndex>=currentBatch.length){showEndOfFeedScene();}
+
+  showOnlyMainFeed();
+  if(!currentCardNode && currentBatch.length) presentCard(Math.max(0, Math.min(activeBatchIndex, currentBatch.length-1)));
 
   if(!fromHistory){
     const u=new URL(location.href);
@@ -2340,6 +2409,7 @@ function getPermalinkIdFromLocation() {
 }
 
 async function bootMainFeedOnly() {
+  showOnlyMainFeed();
   // MAIN FEED is allowed to bootstrap/fallback independently.
   if (!currentCardNode && !currentBatch.length) {
     isDropViewing = true;
@@ -2378,6 +2448,7 @@ async function bootMainFeedOnly() {
 
 async function bootPermalinkOnly(id) {
   if (!id) return;
+  showOnlyPermalinkFeed();
 
   try {
     const postData = await resolvePermalinkPost(id);
@@ -2408,10 +2479,10 @@ async function bootTypeForgeFeed() {
 
   const id = getPermalinkIdFromLocation();
 
-  // Start BOTH layers independently. A slow/failing main feed can NEVER block
-  // a direct permalink from opening.
-  bootMainFeedOnly();
+  // Strict single-layer bootstrap: a direct permalink opens alone; the main
+  // feed is not started underneath it.
   if (id) bootPermalinkOnly(id);
+  else bootMainFeedOnly();
 
   typeforgeBootComplete = true;
 }
