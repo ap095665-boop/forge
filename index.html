@@ -541,6 +541,9 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   }
 }
 .kinetic-footer { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.subtitle-actions { display: inline-flex; align-items: center; justify-content: center; gap: 8px; max-width: 94%; }
+.subtitle-actions .kinetic-subtitle { max-width: none; }
+.subtitle-actions .visit-btn { flex-shrink: 0; }
 .kinetic-subtitle {
   font-family: 'Great Vibes', cursive;
   font-size: 24px;
@@ -898,6 +901,88 @@ select.text-input { background: #080c14; }
   .tf-loader-status { opacity: .7; }
 }
 
+
+/* Visit Source is visually nested inside the same Read More glass control */
+.subtitle-glass.is-readmore:has(.visit-btn-inside) .subtitle-readmore {
+  justify-content: flex-start;
+  padding-left: 24px;
+  padding-right: 145px;
+}
+.subtitle-glass .visit-btn-inside {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  margin: 0;
+  border-radius: 18px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .45s ease, visibility 0s linear .45s, background .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.subtitle-glass.is-readmore .visit-btn-inside {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .45s ease, visibility 0s linear 0s, background .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.subtitle-glass .visit-btn-inside:hover {
+  transform: translateY(-50%);
+}
+.subtitle-glass .visit-btn-inside:focus-visible {
+  outline: 2px solid rgba(255,255,255,.7);
+  outline-offset: 2px;
+}
+@media (max-width: 560px) {
+  .subtitle-glass.is-readmore:has(.visit-btn-inside) .subtitle-readmore {
+    padding-left: 14px;
+    padding-right: 118px;
+  }
+  .subtitle-glass .visit-btn-inside {
+    right: 9px;
+    padding: 5px 9px;
+    font-size: 9px;
+  }
+}
+
+/* Visit Source nested inside the Read More glass button */
+.read-more-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.read-more-btn .visit-source-inset{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 9px;
+  margin:0;
+  border:1px solid currentColor;
+  border-radius:999px;
+  background:transparent;
+  font:600 10px/1 Inter, sans-serif;
+  letter-spacing:.08em;
+  text-decoration:none;
+  white-space:nowrap;
+  opacity:.9;
+  transition:background .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease;
+}
+.read-more-btn .visit-source-inset:hover{
+  opacity:1;
+  background:rgba(255,255,255,.08);
+  box-shadow:0 0 14px rgba(255,255,255,.16);
+  transform:translateY(-1px);
+}
+
 </style>
 </head>
 <body>
@@ -1220,13 +1305,13 @@ function createCardElement(p, isPreview = false) {
         <div class="kinetic-header"><button type="button" class="kinetic-badge" data-tagline="${esc(p.tagline || 'DECLARATION')}" aria-label="Explore posts tagged ${esc(p.tagline || 'DECLARATION')}">${esc(p.tagline || 'DECLARATION')}</button></div>
         <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
         <div class="kinetic-footer">
-          ${p.subtitle ? `<div class="kinetic-subtitle"><button type="button" class="subtitle-glass" aria-label="Read full subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><span class="subtitle-readmore">READ MORE ↗</span></button></div>` : ''}
-        </div>
+         ${(p.subtitle || u) ? `<div class="subtitle-actions">${p.subtitle ? `<div class="kinetic-subtitle"><div class="subtitle-glass" role="button" tabindex="0" aria-label="Read full subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><span class="subtitle-readmore">READ MORE ↗</span>${u ? `<a class="visit-btn visit-btn-inside" href="${esc(u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">VISIT SOURCE ↗</a>` : ''}</div></div>` : ''}${u && !p.subtitle ? `<a class="visit-btn" href="${esc(u)}" target="_blank" rel="noopener">VISIT SOURCE ↗</a>` : ''}</div>` : ''}
       </div>
     `;
     const subtitleGlass = previewWrap.querySelector('.subtitle-glass');
     if (subtitleGlass) {
-      subtitleGlass.onclick = () => openSubtitleReader(p.subtitle);
+      subtitleGlass.onclick = (e) => { if (!e.target.closest('.visit-btn-inside')) openSubtitleReader(p.subtitle); };
+      subtitleGlass.onkeydown = (e) => { if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.visit-btn-inside')) { e.preventDefault(); openSubtitleReader(p.subtitle); } };
       window.setTimeout(() => subtitleGlass.classList.add('is-readmore'), 3500);
     }
     bindTaglineBadges(previewWrap);
@@ -1251,15 +1336,15 @@ function createCardElement(p, isPreview = false) {
       <div class="kinetic-header"><button type="button" class="kinetic-badge" data-tagline="${esc(p.tagline || 'DECLARATION')}" aria-label="Explore posts tagged ${esc(p.tagline || 'DECLARATION')}">${esc(p.tagline || 'DECLARATION')}</button></div>
       <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
       <div class="kinetic-footer">
-        ${p.subtitle ? `<div class="kinetic-subtitle"><button type="button" class="subtitle-glass" aria-label="Read full subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><span class="subtitle-readmore">READ MORE ↗</span></button></div>` : ''}
-        ${u ? `<a class="visit-btn" href="${esc(u)}" target="_blank" rel="noopener">VISIT SOURCE ↗</a>` : ''}
+         ${(p.subtitle || u) ? `<div class="subtitle-actions">${p.subtitle ? `<div class="kinetic-subtitle"><div class="subtitle-glass" role="button" tabindex="0" aria-label="Read full subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><span class="subtitle-readmore">READ MORE ↗</span>${u ? `<a class="visit-btn visit-btn-inside" href="${esc(u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">VISIT SOURCE ↗</a>` : ''}</div></div>` : ''}${u && !p.subtitle ? `<a class="visit-btn" href="${esc(u)}" target="_blank" rel="noopener">VISIT SOURCE ↗</a>` : ''}</div>` : ''}
       </div>
       <button class="post-share-btn" aria-label="Share post" title="Share post" type="button" onclick="sharePost('${esc(p.id || '')}')">↗</button>
     </div>
   `;
   const subtitleGlass = card.querySelector('.subtitle-glass');
   if (subtitleGlass) {
-    subtitleGlass.onclick = () => openSubtitleReader(p.subtitle);
+    subtitleGlass.onclick = (e) => { if (!e.target.closest('.visit-btn-inside')) openSubtitleReader(p.subtitle); };
+    subtitleGlass.onkeydown = (e) => { if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.visit-btn-inside')) { e.preventDefault(); openSubtitleReader(p.subtitle); } };
     window.setTimeout(() => subtitleGlass.classList.add('is-readmore'), 3500);
   }
   bindTaglineBadges(card);
