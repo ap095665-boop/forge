@@ -405,12 +405,112 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   position: relative; z-index: 2; width: 100%; margin: auto 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; transform: translate3d(0,0,0); backface-visibility: hidden; will-change: transform;
 }
+
+/* PREMIUM HEADLINE SCAN GLOW
+   The headline stays completely normal. Every 3 seconds a luminous scan
+   travels across every glyph at the same time. The scan exists only while
+   moving and is clipped to the actual letter shapes. */
 .kinetic-headline {
-  font-family: 'Space Grotesk', sans-serif; font-size: clamp(28px, 7.5vw, 46px); font-weight: 900;
-  line-height: 1.05; text-transform: uppercase; text-align: center; color: var(--card-text, #ffffff);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(28px, 7.5vw, 46px);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--card-text, #ffffff);
+  isolation: isolate;
 }
-.kinetic-headline .word-wrapper { display: inline-block; white-space: pre; will-change: transform, opacity; transform: translate3d(0,0,0); }
-.kinetic-headline .accent-word { color: var(--card-accent); text-shadow: 0 0 28px var(--card-accent-50); }
+
+.kinetic-headline .word-wrapper {
+  position: relative;
+  display: inline-block;
+  white-space: pre;
+  will-change: transform, opacity;
+  transform: translate3d(0,0,0);
+  color: var(--card-text, #ffffff);
+}
+
+/* The moving layer duplicates each real word, but remains invisible except
+   for the passing light beam. All words share the same timing, so the scan
+   reads as one continuous sweep across the whole headline. */
+.kinetic-headline .word-wrapper::after {
+  content: attr(data-word);
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background: linear-gradient(108deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255,255,255,.06) 43%,
+    rgba(255,255,255,.82) 46%,
+    rgba(255,255,255,1) 48%,
+    var(--card-accent, #48e8ff) 50%,
+    rgba(255,255,255,1) 52%,
+    rgba(180,107,255,.92) 54%,
+    rgba(255,255,255,.45) 57%,
+    transparent 61%,
+    transparent 100%);
+  background-size: 280% 100%;
+  background-position: -140% 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 4px rgba(255,255,255,.35))
+          drop-shadow(0 0 11px var(--card-accent-20));
+  animation: typeforgeHeadlineScan 6s cubic-bezier(.65,0,.35,1) infinite;
+  will-change: background-position, opacity, filter;
+}
+
+.kinetic-headline .accent-word {
+  color: var(--card-accent);
+  text-shadow: 0 0 28px var(--card-accent-50);
+}
+
+.kinetic-headline .accent-word::after {
+  filter: drop-shadow(0 0 6px var(--card-accent-50))
+          drop-shadow(0 0 14px rgba(255,255,255,.18));
+}
+
+@keyframes typeforgeHeadlineScan {
+  0%, 70% {
+    opacity: 0;
+    background-position: -140% 0;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  76% {
+    opacity: .18;
+    background-position: -70% 0;
+  }
+  82% {
+    opacity: .92;
+    background-position: 0% 0;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,.55))
+            drop-shadow(0 0 13px var(--card-accent-40));
+  }
+  88% {
+    opacity: 1;
+    background-position: 70% 0;
+    filter: drop-shadow(0 0 7px rgba(255,255,255,.65))
+            drop-shadow(0 0 18px var(--card-accent-50));
+  }
+  94%, 100% {
+    opacity: 0;
+    background-position: 140% 0;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kinetic-headline .word-wrapper::after {
+    animation: none;
+    opacity: 0;
+  }
+}
 .kinetic-footer { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .kinetic-subtitle {
   font-family: 'Great Vibes', cursive;
@@ -515,6 +615,17 @@ select.text-input { background: #080c14; }
 #toast.show { opacity: .18; transform: translateX(-50%) translateY(0); }
 
 /* FULL SUBTITLE READER — CREATED ONLY WHEN USED */
+/* READ-MORE POPUP: per-word glitch/type reveal — subtitle only */
+#subtitleReaderText .subtitle-reveal-word { display:inline-block; opacity:0; transform:translateY(.35em) skewX(-8deg); filter:blur(5px); clip-path:inset(0 100% 0 0); will-change:transform,opacity,filter,clip-path; }
+#subtitleReaderText .subtitle-reveal-word.is-revealed { animation:subtitleWordGlitchReveal .52s cubic-bezier(.2,.75,.25,1) forwards; animation-delay:calc(var(--word-index) * 55ms); }
+@keyframes subtitleWordGlitchReveal {
+0%{opacity:0;transform:translateX(-10px) skewX(-14deg);filter:blur(6px);clip-path:inset(0 100% 0 0);text-shadow:4px 0 #00e5ff,-4px 0 #ff2bd6}
+35%{opacity:1;transform:translateX(3px) skewX(6deg);filter:blur(1px);clip-path:inset(0 12% 0 0);text-shadow:-3px 0 #00e5ff,3px 0 #ff2bd6}
+55%{transform:translateX(-2px) skewX(-3deg);clip-path:inset(0);text-shadow:2px 0 #00e5ff,-2px 0 #ff2bd6}
+75%{transform:translateX(1px);filter:blur(0);text-shadow:-1px 0 #00e5ff,1px 0 #ff2bd6}
+100%{opacity:1;transform:none;filter:none;clip-path:inset(0);text-shadow:none}}
+@media (prefers-reduced-motion:reduce){#subtitleReaderText .subtitle-reveal-word{opacity:1;transform:none;filter:none;clip-path:none}#subtitleReaderText .subtitle-reveal-word.is-revealed{animation:none}}
+
 #subtitleReader {
   position: fixed; inset: 0; z-index: 500;
   display: flex; align-items: center; justify-content: center;
@@ -617,9 +728,152 @@ select.text-input { background: #080c14; }
 }
 .end-search-btn:hover { background:rgba(72,232,255,.14); box-shadow:0 0 20px rgba(72,232,255,.18); }
 .end-search-btn:active { transform:scale(.96); }
+
+
+/* =========================================================================
+   TYPEFORGE STARTUP LOADER — INLINE SVG, NO IMAGE ASSET
+   A short premium emblem reveal runs once when the app starts.
+   ========================================================================= */
+#typeforgeLoader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(20,70,130,.16), transparent 34%),
+    #020306;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .55s cubic-bezier(.16,1,.3,1), visibility 0s linear .55s;
+}
+#typeforgeLoader.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.tf-loader-mark {
+  width: min(230px, 58vw);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 0 10px rgba(72,232,255,.34)) drop-shadow(0 0 30px rgba(0,110,255,.18));
+}
+.tf-loader-ring {
+  fill: none;
+  stroke: rgba(72,232,255,.48);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transform-origin: 100px 100px;
+  animation: tfRingRotate 5.5s linear infinite;
+}
+.tf-loader-ring.r2 {
+  stroke: rgba(60,150,255,.28);
+  stroke-dasharray: 3 7;
+  animation-duration: 7s;
+  animation-direction: reverse;
+}
+.tf-loader-ring.r3 {
+  stroke: rgba(72,232,255,.18);
+  stroke-dasharray: 1 9;
+  animation-duration: 9s;
+}
+.tf-loader-arc {
+  fill: none;
+  stroke: #48e8ff;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 18 520;
+  stroke-dashoffset: 520;
+  filter: drop-shadow(0 0 7px rgba(72,232,255,.9));
+  animation: tfArcTravel 1.65s cubic-bezier(.65,0,.35,1) infinite;
+}
+.tf-loader-core {
+  fill: none;
+  stroke: #eefcff;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  filter: drop-shadow(0 0 5px rgba(72,232,255,.95)) drop-shadow(0 0 16px rgba(0,100,255,.65));
+  animation: tfLogoDraw 1.25s cubic-bezier(.16,1,.3,1) .15s forwards;
+}
+.tf-loader-sheen {
+  fill: none;
+  stroke: rgba(255,255,255,.9);
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: tfSheenPass 1.8s ease-in-out .65s infinite;
+}
+.tf-loader-pulse {
+  fill: #48e8ff;
+  opacity: 0;
+  filter: drop-shadow(0 0 8px #48e8ff) drop-shadow(0 0 22px rgba(0,120,255,.9));
+  animation: tfCorePulse 1.4s ease-in-out .35s infinite;
+}
+.tf-loader-status {
+  position: absolute;
+  top: calc(50% + min(132px, 34vw));
+  left: 50%;
+  transform: translateX(-50%);
+  font: 700 8px/1 'JetBrains Mono', monospace;
+  letter-spacing: 2.5px;
+  color: rgba(190,220,255,.58);
+  white-space: nowrap;
+  animation: tfStatusPulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes tfRingRotate { to { transform: rotate(360deg); } }
+@keyframes tfArcTravel {
+  0% { stroke-dashoffset: 520; opacity: 0; transform: rotate(-28deg); }
+  18% { opacity: 1; }
+  78% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; transform: rotate(332deg); }
+}
+@keyframes tfLogoDraw {
+  0% { stroke-dasharray: 0 1; stroke-dashoffset: 1; opacity: 0; }
+  18% { opacity: 1; }
+  72% { stroke-dasharray: 1 0; stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dasharray: 1 0; stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes tfSheenPass {
+  0%, 38% { opacity: 0; transform: translateX(-55px); }
+  52% { opacity: .95; }
+  70%, 100% { opacity: 0; transform: translateX(55px); }
+}
+@keyframes tfCorePulse {
+  0%, 100% { opacity: 0; transform: scale(.65); }
+  35% { opacity: .95; transform: scale(1); }
+  58% { opacity: .25; transform: scale(1.45); }
+}
+@keyframes tfStatusPulse { from { opacity: .42; } to { opacity: .9; } }
+@media (prefers-reduced-motion: reduce) {
+  #typeforgeLoader { transition-duration: .2s; }
+  .tf-loader-ring, .tf-loader-arc, .tf-loader-core, .tf-loader-sheen, .tf-loader-pulse, .tf-loader-status { animation: none; }
+  .tf-loader-core { stroke-dasharray: 1 0; stroke-dashoffset: 0; opacity: 1; }
+  .tf-loader-status { opacity: .7; }
+}
+
 </style>
 </head>
 <body>
+
+<!-- TYPEFORGE STARTUP LOADER: pure inline SVG, no image asset -->
+<div id="typeforgeLoader" aria-hidden="true">
+  <svg class="tf-loader-mark" viewBox="0 0 200 200" role="img" aria-label="TypeForge loading">
+    <circle class="tf-loader-ring r3" cx="100" cy="100" r="91"></circle>
+    <circle class="tf-loader-ring r2" cx="100" cy="100" r="78"></circle>
+    <circle class="tf-loader-ring" cx="100" cy="100" r="65"></circle>
+    <path class="tf-loader-arc" d="M100 12 A88 88 0 0 1 188 100"></path>
+    <path class="tf-loader-core" pathLength="1" d="M38 54 H162 M100 54 V151 M70 151 H130"></path>
+    <path class="tf-loader-sheen" d="M40 54 H160"></path>
+    <circle class="tf-loader-pulse" cx="100" cy="54" r="2.7"></circle>
+    <circle class="tf-loader-pulse" cx="100" cy="151" r="2.1" style="animation-delay:.7s"></circle>
+  </svg>
+  <div class="tf-loader-status">INITIALIZING TYPEFORGE</div>
+</div>
+
 
 <div id="topbar">
   <div class="brand-group hud-element">
@@ -766,6 +1020,22 @@ REMAINS FOREVER</textarea></div>
 "use strict";
 
 /* =========================================================================
+   STARTUP LOADER — one-shot, non-blocking after the initial reveal
+   ========================================================================= */
+(function initTypeForgeLoader(){
+  const loader = document.getElementById('typeforgeLoader');
+  if (!loader) return;
+  const finish = () => {
+    loader.classList.add('is-done');
+    setTimeout(() => loader.remove(), 700);
+  };
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const delay = reduced ? 350 : 1850;
+  window.setTimeout(finish, delay);
+})();
+
+
+/* =========================================================================
    1. SUPABASE CLIENT
    ========================================================================= */
 const SUPABASE_URL = 'https://ymoiowbezpggrqxmkuku.supabase.co';
@@ -829,7 +1099,7 @@ function headline(h, a) {
   let i = 0;
   return String(h || '').split('\n').map(l =>
     `<div>${l.split(' ').map(w =>
-      `<span class="word-wrapper ${a && w.toUpperCase().includes(a.toUpperCase()) ? 'accent-word' : ''}" style="--idx:${i++}">${esc(w)}</span>`
+      `<span class="word-wrapper ${a && w.toUpperCase().includes(a.toUpperCase()) ? 'accent-word' : ''}" data-word="${esc(w)}" style="--idx:${i++}">${esc(w)}</span>`
     ).join(' ')}</div>`
   ).join('');
 }
@@ -845,9 +1115,17 @@ const subtitleReaderText = document.getElementById('subtitleReaderText');
 const btnCloseSubtitleReader = document.getElementById('btnCloseSubtitleReader');
 
 function openSubtitleReader(text) {
-  subtitleReaderText.textContent = String(text || '');
+  const parts = String(text || '').split(/(\s+)/);
+  let wordIndex = 0;
+  subtitleReaderText.innerHTML = parts.map(part => {
+    if (/^\s+$/.test(part)) return part;
+    return `<span class="subtitle-reveal-word" style="--word-index:${wordIndex++}">${esc(part)}</span>`;
+  }).join('');
   subtitleReader.classList.add('open');
   subtitleReader.setAttribute('aria-hidden', 'false');
+  requestAnimationFrame(() => {
+    subtitleReaderText.querySelectorAll('.subtitle-reveal-word').forEach(word => word.classList.add('is-revealed'));
+  });
 }
 function closeSubtitleReader() {
   subtitleReader.classList.remove('open');
@@ -1002,7 +1280,7 @@ function scramble(h, a) {
         let z = '';
         for (let c of w) z += x++ < k ? esc(c) : chars[Math.random() * chars.length | 0];
         x++;
-        return `<span class="word-wrapper">${z}</span>`;
+        return `<span class="word-wrapper" data-word="${esc(z)}">${z}</span>`;
       }).join(' ')}</div>`
     ).join('');
     if (q < 1) requestAnimationFrame(f);
@@ -1188,7 +1466,7 @@ function dismissActiveAndAdvance() {
 
   isTransitioning = true;
   const exiting = currentCardNode;
-  exiting.classList.add('exit-top');
+  requestAnimationFrame(() => { exiting.classList.add('exit-top'); });
 
   setTimeout(() => {
     exiting.remove();
