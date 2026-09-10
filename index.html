@@ -406,10 +406,9 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   align-items: center; justify-content: center; transform: translate3d(0,0,0); backface-visibility: hidden; will-change: transform;
 }
 
-/* PREMIUM HEADLINE SCAN GLOW
-   The headline stays completely normal. Every 3 seconds a luminous scan
-   travels across every glyph at the same time. The scan exists only while
-   moving and is clipped to the actual letter shapes. */
+/* UI-FRIENDLY HEADLINE SCAN
+   Lightweight 6-second cycle. The headline stays normal; only a short,
+   soft scan passes across the glyphs. No animated glow/drop-shadow filters. */
 .kinetic-headline {
   font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(28px, 7.5vw, 46px);
@@ -453,55 +452,45 @@ input, select, textarea { color: var(--text); background: transparent; border: n
     rgba(255,255,255,.45) 57%,
     transparent 61%,
     transparent 100%);
-  background-size: 280% 100%;
-  background-position: -140% 0;
+  background-size: 240% 100%;
+  background-position: -120% 0;
   background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   opacity: 0;
   mix-blend-mode: screen;
-  filter: drop-shadow(0 0 4px rgba(255,255,255,.35))
-          drop-shadow(0 0 11px var(--card-accent-20));
-  animation: typeforgeHeadlineScan 6s cubic-bezier(.65,0,.35,1) infinite;
-  will-change: background-position, opacity, filter;
+  animation: typeforgeHeadlineScan 6s linear infinite;
+  will-change: background-position, opacity;
 }
 
 .kinetic-headline .accent-word {
   color: var(--card-accent);
-  text-shadow: 0 0 28px var(--card-accent-50);
 }
 
 .kinetic-headline .accent-word::after {
-  filter: drop-shadow(0 0 6px var(--card-accent-50))
-          drop-shadow(0 0 14px rgba(255,255,255,.18));
+  filter: none;
 }
 
 @keyframes typeforgeHeadlineScan {
-  0%, 70% {
+  0%, 68% {
     opacity: 0;
-    background-position: -140% 0;
-    filter: drop-shadow(0 0 0 transparent);
+    background-position: -120% 0;
   }
-  76% {
-    opacity: .18;
-    background-position: -70% 0;
+  72% {
+    opacity: .22;
+    background-position: -75% 0;
   }
-  82% {
-    opacity: .92;
+  80% {
+    opacity: .72;
     background-position: 0% 0;
-    filter: drop-shadow(0 0 5px rgba(255,255,255,.55))
-            drop-shadow(0 0 13px var(--card-accent-40));
   }
   88% {
-    opacity: 1;
-    background-position: 70% 0;
-    filter: drop-shadow(0 0 7px rgba(255,255,255,.65))
-            drop-shadow(0 0 18px var(--card-accent-50));
+    opacity: .55;
+    background-position: 75% 0;
   }
   94%, 100% {
     opacity: 0;
-    background-position: 140% 0;
-    filter: drop-shadow(0 0 0 transparent);
+    background-position: 120% 0;
   }
 }
 
@@ -611,6 +600,21 @@ select.text-input { background: #080c14; }
 
 .modal-close { font-size: 20px; color: var(--muted); align-self: flex-end; }
 #searchResults { display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow: auto; }
+/* TAG FILTER / TAG FEED */
+.tag-search-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.tag-search-label { min-width:0; font:800 9px/1.2 'JetBrains Mono',monospace; letter-spacing:.8px; color:var(--muted); text-transform:uppercase; }
+.tag-search-label strong { color:var(--cyan); }
+.tag-feed-btn { flex:0 0 auto; min-height:30px; padding:0 11px; border:1px solid var(--cyan); border-radius:16px; background:rgba(72,232,255,.07); color:var(--cyan); font:800 8px/1 'JetBrains Mono',monospace; letter-spacing:.6px; }
+.tag-feed-btn:active { transform:scale(.96); }
+#tagViewer { position:fixed; inset:0; z-index:175; display:none; background:var(--void); overflow:hidden; touch-action:pan-y; }
+#tagViewer.open { display:block; }
+#tagViewerSlot { position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+#tagViewerSlot>.feed-card { position:absolute; inset:0; width:100%; height:100%; max-width:none; max-height:none; border-radius:0; }
+#btnCloseTagViewer { position:fixed; top:max(14px,env(safe-area-inset-top)); left:14px; z-index:190; display:inline-flex; align-items:center; gap:7px; min-height:32px; padding:0 11px; border:1px solid rgba(255,255,255,.14); border-radius:16px; background:rgba(5,7,12,.48); color:var(--text); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); font:700 9px/1 'JetBrains Mono',monospace; letter-spacing:.7px; cursor:pointer; }
+#btnCloseTagViewer span:first-child { font-size:13px; }
+#btnCloseTagViewer:active { transform:scale(.96); opacity:.75; }
+#tagViewerLabel { position:fixed; top:max(18px,env(safe-area-inset-top)); right:14px; z-index:190; max-width:55vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:7px 10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(5,7,12,.42); color:var(--muted); backdrop-filter:blur(10px); font:700 8px/1 'JetBrains Mono',monospace; letter-spacing:.6px; }
+
 #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(12,17,28,.72); border: 1px solid rgba(120,180,255,.16); padding: 6px 11px; border-radius: var(--r); font-size: 10px; opacity: 0; transition: opacity .25s ease, transform .25s ease; z-index: 300; pointer-events: none; }
 #toast.show { opacity: .18; transform: translateX(-50%) translateY(0); }
 
@@ -905,6 +909,12 @@ select.text-input { background: #080c14; }
   <div id="archiveViewerSlot"></div>
 </div>
 
+<div id="tagViewer" aria-hidden="true">
+  <button id="btnCloseTagViewer" type="button" aria-label="Close tag feed and return to main feed"><span>✕</span><span>MAIN FEED</span></button>
+  <div id="tagViewerLabel">TAG FEED</div>
+  <div id="tagViewerSlot"></div>
+</div>
+
 <div id="permalinkViewer" aria-hidden="true">
   <button id="btnClosePermalinkViewer" type="button" aria-label="Close permalink and return to main feed"><span>✕</span><span>MAIN FEED</span></button>
   <div id="permalinkViewerSlot"></div>
@@ -1174,7 +1184,7 @@ function createCardElement(p, isPreview = false) {
     previewWrap.innerHTML = `
       <div class="card-stage anim-${esc(p.anim || 'kinetic_slam')} text-animated">
         <div class="bg-layer ${b.cls}"></div>
-        <div class="kinetic-header"><div class="kinetic-badge">${esc(p.tagline || 'DECLARATION')}</div></div>
+        <div class="kinetic-header"><button type="button" class="kinetic-badge" data-tagline="${esc(p.tagline || 'DECLARATION')}" aria-label="Explore posts tagged ${esc(p.tagline || 'DECLARATION')}">${esc(p.tagline || 'DECLARATION')}</button></div>
         <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
         <div class="kinetic-footer">
           ${p.subtitle ? `<div class="kinetic-subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><button type="button" class="read-more-inline" aria-label="Read full subtitle">READ MORE ↗</button></div>` : ''}
@@ -1189,6 +1199,7 @@ function createCardElement(p, isPreview = false) {
       });
       readMore.onclick = () => openSubtitleReader(p.subtitle);
     }
+    bindTaglineBadges(previewWrap);
     return previewWrap;
   }
 
@@ -1207,7 +1218,7 @@ function createCardElement(p, isPreview = false) {
   card.innerHTML = `
     <div class="card-stage anim-${esc(p.anim || 'kinetic_slam')}">
       <div class="bg-layer ${b.cls}"></div>
-      <div class="kinetic-header"><div class="kinetic-badge">${esc(p.tagline || 'DECLARATION')}</div></div>
+      <div class="kinetic-header"><button type="button" class="kinetic-badge" data-tagline="${esc(p.tagline || 'DECLARATION')}" aria-label="Explore posts tagged ${esc(p.tagline || 'DECLARATION')}">${esc(p.tagline || 'DECLARATION')}</button></div>
       <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
       <div class="kinetic-footer">
         ${p.subtitle ? `<div class="kinetic-subtitle"><span class="subtitle-preview">${esc(p.subtitle)}</span><button type="button" class="read-more-inline" aria-label="Read full subtitle">READ MORE ↗</button></div>` : ''}
@@ -1224,6 +1235,7 @@ function createCardElement(p, isPreview = false) {
     });
     readMore.onclick = () => openSubtitleReader(p.subtitle);
   }
+  bindTaglineBadges(card);
   card._accent = p.accent_word || p.accentWord || '';
   return card;
 }
@@ -1329,6 +1341,18 @@ let searchFeedSwipeLocked = false;
 let permalinkViewerOpen = false;
 let permalinkViewerNode = null;
 let permalinkViewerCard = null;
+
+// TAG FEED — independent fullscreen viewer filtered to one exact tagline.
+let tagViewerOpen = false;
+let tagFeedCards = [];
+let tagFeedIndex = -1;
+let tagFeedNodes = [];
+let tagFeedTransitioning = false;
+let tagFeedSwipeStartX = 0;
+let tagFeedSwipeStartY = 0;
+let tagFeedSwipeActive = false;
+let tagFeedSwipeLocked = false;
+let activeTaglineFilter = '';
 
 async function loadCuratedFeed() {
   if (curatedFeed) return curatedFeed;
@@ -1500,7 +1524,7 @@ function dismissActiveAndAdvance() {
 /* DESK / MOUSE WHEEL GESTURE */
 let wheelLock = false;
 window.addEventListener('wheel', e => {
-  if (e.target.closest('#creatorDrawer, #searchDrawer, #archiveViewer, #endOfFeedScene')) return;
+  if (e.target.closest('#creatorDrawer, #searchDrawer, #archiveViewer, #tagViewer, #endOfFeedScene')) return;
   if (document.getElementById('endOfFeedScene')?.classList.contains('visible')) return;
   if (e.deltaY > 28 && !wheelLock && !isTransitioning) {
     wheelLock = true;
@@ -1523,7 +1547,7 @@ let mainSwipeLocked = false;
 
 activeSlot.addEventListener('pointerdown', e => {
   if (document.getElementById('endOfFeedScene')?.classList.contains('visible')) return;
-  if (archiveViewerOpen || permalinkViewerOpen || isTransitioning || isFetching) return;
+  if (archiveViewerOpen || tagViewerOpen || permalinkViewerOpen || isTransitioning || isFetching) return;
   if (e.pointerType === 'mouse') return;
   mainSwipeActive = true;
   mainSwipeStartX = e.clientX;
@@ -1537,7 +1561,7 @@ activeSlot.addEventListener('pointerup', e => {
   }
   if (!mainSwipeActive) return;
   mainSwipeActive = false;
-  if (archiveViewerOpen || permalinkViewerOpen || isTransitioning || isFetching || mainSwipeLocked) return;
+  if (archiveViewerOpen || tagViewerOpen || permalinkViewerOpen || isTransitioning || isFetching || mainSwipeLocked) return;
 
   const dx = e.clientX - mainSwipeStartX;
   const dy = e.clientY - mainSwipeStartY;
@@ -1750,6 +1774,8 @@ function renderSearchCards(results) {
 }
 
 const openSearch = () => {
+  clearTagSearchHeader();
+  searchInput.value = '';
   searchDrawer.classList.add('open');
   loadAllArchiveCards();
   setTimeout(() => searchInput.focus(), 60);
@@ -1757,7 +1783,7 @@ const openSearch = () => {
 document.getElementById('btnOpenSearch').onclick = openSearch;
 document.getElementById('btnOpenSearchMobile').onclick = openSearch;
 document.getElementById('btnEndOpenSearch').onclick = openSearch;
-document.getElementById('btnCloseSearch').onclick = () => searchDrawer.classList.remove('open');
+document.getElementById('btnCloseSearch').onclick = () => { searchDrawer.classList.remove('open'); clearTagSearchHeader(); searchInput.value=''; };
 
 function archiveMiniCard(p) {
   const title = esc((p.headline || 'UNTITLED').replace(/\n/g,' '));
@@ -1802,6 +1828,63 @@ function normalizeLocalSearch(value){
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu,' ')
     .trim();
+}
+
+function filterExactTaglineCards(tagline){
+  if(!Array.isArray(allArchiveCards)) return [];
+  const wanted=normalizeLocalSearch(tagline);
+  if(!wanted) return [];
+  return allArchiveCards.filter(p=>normalizeLocalSearch(p?.tagline)===wanted);
+}
+
+function openTaglineSearch(tagline){
+  const raw=String(tagline||'').trim();
+  if(!raw) return;
+  activeTaglineFilter=raw;
+  searchDrawer.classList.add('open');
+  searchInput.value=raw;
+  renderTagSearchHeader(raw);
+  if(Array.isArray(allArchiveCards)){
+    renderSearchCards(filterExactTaglineCards(raw));
+  }else{
+    searchResults.innerHTML='<div class="search-empty">LOADING TAG POSTS…</div>';
+    loadAllArchiveCards().then(()=>{
+      if(activeTaglineFilter===raw) renderSearchCards(filterExactTaglineCards(raw));
+    });
+  }
+  setTimeout(()=>searchInput.focus(),60);
+}
+
+function renderTagSearchHeader(tagline){
+  let head=document.getElementById('tagSearchHead');
+  if(!head){
+    head=document.createElement('div');
+    head.id='tagSearchHead';
+    head.className='tag-search-head';
+    searchResults.parentElement.insertBefore(head,searchResults);
+  }
+  head.innerHTML=`<div class="tag-search-label">TAG FILTER · <strong>${esc(tagline)}</strong></div><button type="button" class="tag-feed-btn" id="btnOpenTagFeed">OPEN TAG FEED ↗</button>`;
+  head.querySelector('#btnOpenTagFeed').onclick=()=>{
+    const cards=filterExactTaglineCards(tagline);
+    if(!cards.length){ toast('NO POSTS WITH THIS TAG'); return; }
+    searchDrawer.classList.remove('open');
+    openTagFeedAt(0,cards,tagline);
+  };
+}
+
+function clearTagSearchHeader(){
+  const head=document.getElementById('tagSearchHead');
+  if(head) head.remove();
+  activeTaglineFilter='';
+}
+
+function bindTaglineBadges(root=document){
+  root.querySelectorAll('.kinetic-badge[data-tagline]').forEach(btn=>{
+    btn.onclick=e=>{
+      e.preventDefault(); e.stopPropagation();
+      openTaglineSearch(btn.dataset.tagline||'');
+    };
+  });
 }
 
 function filterLocalArchiveCards(q){
@@ -2038,6 +2121,84 @@ document.getElementById('archiveViewerSlot').addEventListener('pointerup',e=>{
 document.getElementById('archiveViewerSlot').addEventListener('pointercancel',()=>{
   searchFeedSwipeActive=false;
 });
+
+function animateTagFeedCard(card,data){
+  if(!card) return;
+  requestAnimationFrame(()=>{
+    card.classList.add('entered'); card.classList.remove('enter-bottom');
+    const stage=card.querySelector('.card-stage');
+    if(stage)setTimeout(()=>{
+      if(!tagViewerOpen || !tagFeedNodes.includes(card))return;
+      stage.classList.add('text-animated');
+      if(stage.classList.contains('anim-cyber_scramble')) scramble(stage.querySelector('.kinetic-headline'),data.accent_word||data.accentWord||'');
+    },160);
+  });
+}
+
+function renderTagFeedWindow(){
+  const slot=document.getElementById('tagViewerSlot');
+  if(!slot || !tagFeedCards.length || tagFeedIndex<0)return;
+  slot.replaceChildren(); tagFeedNodes=[];
+  const end=Math.min(tagFeedCards.length,tagFeedIndex+3);
+  for(let i=tagFeedIndex;i<end;i++){
+    const data=tagFeedCards[i], card=createCardElement(data);
+    if(i===tagFeedIndex){
+      card.classList.remove('enter-bottom'); card.style.zIndex='3';
+      tagFeedNodes.push(card); slot.appendChild(card); animateTagFeedCard(card,data);
+    }else{
+      card.style.zIndex=String(3-(i-tagFeedIndex)); card.classList.add('enter-bottom');
+      tagFeedNodes.push(card); slot.appendChild(card);
+    }
+  }
+}
+
+function openTagFeedAt(index,cards,tagline){
+  if(!Array.isArray(cards)||!cards.length)return;
+  const viewer=document.getElementById('tagViewer');
+  if(!viewer)return;
+  tagViewerOpen=true; tagFeedCards=cards; tagFeedIndex=Math.max(0,Math.min(index,cards.length-1));
+  tagFeedTransitioning=false; activeTaglineFilter=tagline||'';
+  document.getElementById('tagViewerLabel').textContent=`TAG · ${tagline||'UNKNOWN'}`;
+  hideEndOfFeedScene(); renderTagFeedWindow();
+  viewer.classList.add('open'); viewer.setAttribute('aria-hidden','false');
+}
+
+function advanceTagFeed(){
+  if(!tagViewerOpen||tagFeedTransitioning)return;
+  if(tagFeedIndex>=tagFeedCards.length-1){toast('END OF TAG RESULTS');return;}
+  tagFeedTransitioning=true;
+  const current=tagFeedNodes[0]; if(current)current.classList.add('exit-top');
+  const next=tagFeedIndex+1;
+  setTimeout(()=>{
+    if(!tagViewerOpen){tagFeedTransitioning=false;return;}
+    tagFeedIndex=next; renderTagFeedWindow();
+    tagFeedTransitioning=false;
+  },260);
+}
+
+function closeTagFeed(){
+  const viewer=document.getElementById('tagViewer'),slot=document.getElementById('tagViewerSlot');
+  tagViewerOpen=false; tagFeedCards=[]; tagFeedIndex=-1; tagFeedNodes=[]; tagFeedTransitioning=false; tagFeedSwipeActive=false;
+  if(slot)slot.replaceChildren();
+  if(viewer){viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');}
+  activeTaglineFilter='';
+}
+
+document.getElementById('btnCloseTagViewer').addEventListener('click',closeTagFeed);
+document.getElementById('tagViewer').addEventListener('wheel',e=>{
+  if(e.deltaY>28&&!tagFeedSwipeLocked&&!tagFeedTransitioning){tagFeedSwipeLocked=true;advanceTagFeed();setTimeout(()=>tagFeedSwipeLocked=false,550);}
+},{passive:true});
+document.getElementById('tagViewerSlot').addEventListener('pointerdown',e=>{
+  if(!tagViewerOpen||tagFeedTransitioning||e.pointerType==='mouse')return;
+  tagFeedSwipeActive=true;tagFeedSwipeStartX=e.clientX;tagFeedSwipeStartY=e.clientY;
+},{passive:true});
+document.getElementById('tagViewerSlot').addEventListener('pointerup',e=>{
+  if(!tagFeedSwipeActive)return; tagFeedSwipeActive=false;
+  if(!tagViewerOpen||tagFeedTransitioning||tagFeedSwipeLocked)return;
+  const dx=e.clientX-tagFeedSwipeStartX,dy=e.clientY-tagFeedSwipeStartY;
+  if(dy<-55&&Math.abs(dy)>Math.abs(dx)*1.18){tagFeedSwipeLocked=true;advanceTagFeed();setTimeout(()=>tagFeedSwipeLocked=false,550);}
+},{passive:true});
+document.getElementById('tagViewerSlot').addEventListener('pointercancel',()=>tagFeedSwipeActive=false);
 
 function openPermalinkViewer(data){
   const viewer=document.getElementById('permalinkViewer'), slot=document.getElementById('permalinkViewerSlot');
