@@ -6,7 +6,7 @@
 <title>TYPE FORGE — Kinetic Engine</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Space+Grotesk:wght@500;700;900&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:wght@500;600;700&family=Space+Grotesk:wght@500;700;900&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap');
 :root {
   --void: #05070c; --panel-solid: #0c111c;
   --line: rgba(120,180,255,0.14); --line-strong: rgba(120,180,255,0.3);
@@ -414,7 +414,7 @@ input, select, textarea { color: var(--text); background: transparent; border: n
   font-size: clamp(28px, 7.5vw, 46px);
   font-weight: 900;
   line-height: 1.05;
-  text-transform: uppercase;
+  text-transform: capitalize;
   text-align: center;
   color: var(--card-text, #ffffff);
   isolation: isolate;
@@ -592,7 +592,7 @@ select.text-input { background: #080c14; }
 .archive-mini-bg.orbit { background:radial-gradient(circle,transparent 14%,rgba(72,232,255,.12) 15%,transparent 16%,transparent 28%,rgba(160,120,255,.12) 29%,transparent 30%),#070a10; }
 .archive-mini-content { position:relative; z-index:1; min-height:145px; display:flex; flex-direction:column; justify-content:space-between; padding:11px; background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.55)); }
 .archive-mini-meta { font:700 8px/1 'JetBrains Mono',monospace; letter-spacing:.65px; color:rgba(255,255,255,.62); text-transform:uppercase; }
-.archive-mini-headline { font:900 clamp(14px,3.5vw,20px)/.95 'Space Grotesk',sans-serif; letter-spacing:-.5px; text-transform:uppercase; display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden; }
+.archive-mini-headline { font:600 clamp(16px,3.8vw,22px)/.95 'Cormorant Garamond',serif; letter-spacing:-.5px; text-transform:uppercase; display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden; }
 .archive-mini-accent { color:var(--card-accent,var(--cyan)); }
 .archive-mini-foot { display:flex; justify-content:space-between; gap:8px; font:600 8px/1.2 'JetBrains Mono',monospace; color:rgba(255,255,255,.55); }
 .search-empty { grid-column:1/-1; opacity:.55; padding:18px 4px; text-align:center; font:600 10px/1.5 'JetBrains Mono',monospace; }
@@ -1057,7 +1057,7 @@ const sbClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
 const THEMES = {
   cyber: { name: 'CYBER NEON', accent: '#48e8ff', accent2: '#ff2ad4', bg: '#050711', text: '#ffffff', tagBg: '#ff2ad4' },
   gold: { name: 'LUXURY GOLD', accent: '#ffd066', accent2: '#ffffff', bg: '#08080a', text: '#fbf5e6', tagBg: '#ffd066' },
-  matrix: { name: 'TERMINAL', accent: '#39ff6a', accent2: '#0aff9d', bg: '#030804', text: '#d6ffe3', tagBg: '#39ff6a' },
+  matrix: { name: 'TERMINAL', accent: '#b87333', accent2: '#6f3f1f', bg: '#160d08', text: '#f4e6d5', tagBg: '#b87333' },
   acid: { name: 'STREET ACID', accent: '#d9ff00', accent2: '#00f7ff', bg: '#090a0d', text: '#f3f4f6', tagBg: '#d9ff00' },
   crimson: { name: 'HYPER RED', accent: '#ff3355', accent2: '#ff9900', bg: '#0c0305', text: '#ffffff', tagBg: '#ff3355' },
   minimal: { name: 'SWISS MONO', accent: '#ffffff', accent2: '#808999', bg: '#060608', text: '#ffffff', tagBg: '#ffffff' }
@@ -1848,7 +1848,7 @@ function archiveMiniCard(p) {
 }
 
 function themeAccent(theme) {
-  const m={cyber:'#48e8ff',gold:'#ffd66b',matrix:'#62ff8b',acid:'#d9ff4d',crimson:'#ff5574',minimal:'#e7e7e7'};
+  const m={cyber:'#48e8ff',gold:'#ffd66b',matrix:'#b87333',acid:'#d9ff4d',crimson:'#ff5574',minimal:'#e7e7e7'};
   return m[theme]||'#48e8ff';
 }
 function highlightAccent(text,accent){
