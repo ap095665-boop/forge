@@ -375,6 +375,23 @@ input, select, textarea { color: var(--text); background: transparent; border: n
     radial-gradient(ellipse at 50% 50%, transparent 0 27%, var(--card-accent-15) 27.5% 28%, transparent 28.7%);
   animation: orbitField 24s linear infinite;
 }
+/* PREMIUM HOLOGRAPHIC GLOBE — Midnight Cyan theme only. */
+.card-stage.theme-matrix .theme-globe{position:absolute;left:50%;top:50%;width:min(72vw,560px);height:min(72vw,560px);transform:translate3d(-50%,-50%,0);z-index:1;pointer-events:none;opacity:.30;filter:drop-shadow(0 0 24px var(--card-accent-25));contain:layout paint;animation:tfGlobeWholeSpin 32s linear infinite}
+.card-stage.theme-matrix .theme-globe::before{content:'';position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.20),transparent 13%),radial-gradient(circle at 50% 48%,rgba(59,130,246,.14),transparent 52%),radial-gradient(circle at 68% 72%,rgba(155,107,255,.13),transparent 38%),radial-gradient(circle at 35% 30%,#12212a 0%,#061017 48%,#020407 76%);box-shadow:inset -34px -20px 55px rgba(0,0,0,.72),inset 10px 8px 24px rgba(255,255,255,.05),0 0 30px var(--card-accent-20),0 0 90px rgba(99,102,241,.10)}
+.card-stage.theme-matrix .theme-globe::after{content:'';position:absolute;inset:5%;border-radius:50%;border:1px solid rgba(59,130,246,.30);border-top:2px solid rgba(59,130,246,.95);border-right:2px solid rgba(99,102,241,.72);box-shadow:0 0 12px rgba(59,130,246,.34),0 0 34px rgba(59,130,246,.20),inset 0 0 18px rgba(59,130,246,.08);animation:tfGlobeGlowRing 8s linear infinite}
+@keyframes tfGlobeWholeSpin{from{transform:translate3d(-50%,-50%,0) rotate(0deg)}to{transform:translate3d(-50%,-50%,0) rotate(360deg)}}
+@keyframes tfGlobeGlowRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.card-stage.theme-matrix .globe-orbit{position:absolute;inset:8%;border:1px solid rgba(59,130,246,.28);border-radius:50%;transform-style:preserve-3d;animation:tfGlobeSpin 16s linear infinite}
+.card-stage.theme-matrix .globe-orbit:nth-child(2){transform:rotateX(62deg);animation-duration:13s;animation-direction:reverse}
+.card-stage.theme-matrix .globe-orbit:nth-child(3){transform:rotateY(62deg);animation:tfGlobeSpinY 19s linear infinite}
+.card-stage.theme-matrix .globe-orbit:nth-child(4){transform:rotateX(28deg) rotateY(68deg);animation-duration:23s;animation-direction:reverse;opacity:.58}
+.card-stage.theme-matrix .globe-lat{position:absolute;left:18%;right:18%;height:28%;border:1px solid rgba(59,130,246,.19);border-radius:50%}
+.card-stage.theme-matrix .globe-lat:nth-child(5){top:36%}.card-stage.theme-matrix .globe-lat:nth-child(6){top:24%;transform:scaleY(.72)}.card-stage.theme-matrix .globe-lat:nth-child(7){top:48%;transform:scaleY(.72)}
+@keyframes tfGlobeSpin{from{transform:rotateX(64deg) rotateZ(0deg)}to{transform:rotateX(64deg) rotateZ(360deg)}}
+@keyframes tfGlobeSpinY{from{transform:rotateY(62deg) rotateZ(0deg)}to{transform:rotateY(62deg) rotateZ(360deg)}}
+@media(max-width:600px){.card-stage.theme-matrix .theme-globe{width:min(92vw,470px);height:min(92vw,470px);opacity:.24}}
+@media(prefers-reduced-motion:reduce){.card-stage.theme-matrix .theme-globe,.card-stage.theme-matrix .theme-globe::after,.card-stage.theme-matrix .globe-orbit{animation:none}}
+
 
 .bg-orbit::before,
 .bg-orbit::after {
@@ -1212,8 +1229,8 @@ const sbClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
 const THEMES = {
   cyber: { name: 'CYBER NEON', accent: '#48e8ff', accent2: '#ff2ad4', bg: '#050711', text: '#ffffff', tagBg: '#ff2ad4' },
   gold: { name: 'LUXURY GOLD', accent: '#ffd066', accent2: '#ffffff', bg: '#08080a', text: '#fbf5e6', tagBg: '#ffd066' },
-  matrix: { name: 'TERMINAL', accent: '#b87333', accent2: '#6f3f1f', bg: '#160d08', text: '#f4e6d5', tagBg: '#b87333' },
-  acid: { name: 'STREET ACID', accent: '#d9ff00', accent2: '#00f7ff', bg: '#090a0d', text: '#f3f4f6', tagBg: '#d9ff00' },
+  matrix: { name: 'MIDNIGHT BLUE', accent: '#3b82f6', accent2: '#6366f1', bg: '#020307', text: '#f4f7fb', tagBg: '#2563eb' },
+  acid: { name: 'PREMIUM BROWN', accent: '#b87333', accent2: '#6f3f1f', bg: '#160d08', text: '#f4e6d5', tagBg: '#b87333' },
   crimson: { name: 'HYPER RED', accent: '#ff3355', accent2: '#ff9900', bg: '#0c0305', text: '#ffffff', tagBg: '#ff3355' },
   minimal: { name: 'SWISS MONO', accent: '#ffffff', accent2: '#808999', bg: '#060608', text: '#ffffff', tagBg: '#ffffff' }
 };
@@ -1330,7 +1347,8 @@ function createCardElement(p, isPreview = false) {
     })) previewWrap.style.setProperty(k, v);
 
     previewWrap.innerHTML = `
-      <div class="card-stage anim-${esc(p.anim || 'kinetic_slam')} text-animated">
+      <div class="card-stage theme-${esc(p.theme || 'cyber')} anim-${esc(p.anim || 'kinetic_slam')} text-animated">
+        ${p.theme === 'matrix' ? '<div class="theme-globe" aria-hidden="true"><span class="globe-orbit"></span><span class="globe-orbit"></span><span class="globe-orbit"></span><span class="globe-orbit"></span><span class="globe-lat"></span><span class="globe-lat"></span><span class="globe-lat"></span></div>' : ''}
         <div class="bg-layer ${b.cls}"></div>
         <div class="kinetic-header"><button type="button" class="kinetic-badge" data-tagline="${esc(p.tagline || 'DECLARATION')}" aria-label="Explore posts tagged ${esc(p.tagline || 'DECLARATION')}">${esc(p.tagline || 'DECLARATION')}</button></div>
         <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
@@ -1361,7 +1379,8 @@ function createCardElement(p, isPreview = false) {
   })) card.style.setProperty(k, v);
 
   card.innerHTML = `
-    <div class="card-stage anim-${esc(p.anim || 'kinetic_slam')}">
+    <div class="card-stage theme-${esc(p.theme || 'cyber')} anim-${esc(p.anim || 'kinetic_slam')}">
+      ${p.theme === 'matrix' ? '<div class="theme-globe" aria-hidden="true"><span class="globe-orbit"></span><span class="globe-orbit"></span><span class="globe-orbit"></span><span class="globe-orbit"></span><span class="globe-lat"></span><span class="globe-lat"></span><span class="globe-lat"></span></div>' : ''}
       <div class="bg-layer ${b.cls}"></div>
       <div class="kinetic-header"><button type="button" class="kinetic-badge" data-tagline="${esc(p.tagline || 'DECLARATION')}" aria-label="Explore posts tagged ${esc(p.tagline || 'DECLARATION')}">${esc(p.tagline || 'DECLARATION')}</button></div>
       <div class="kinetic-body"><h1 class="kinetic-headline" data-raw="${encodeURIComponent(p.headline || '')}">${headline(p.headline, p.accent_word || p.accentWord)}</h1></div>
@@ -1997,7 +2016,7 @@ function archiveMiniCard(p) {
 }
 
 function themeAccent(theme) {
-  const m={cyber:'#48e8ff',gold:'#ffd66b',matrix:'#b87333',acid:'#d9ff4d',crimson:'#ff5574',minimal:'#e7e7e7'};
+  const m={cyber:'#48e8ff',gold:'#ffd66b',matrix:'#5eeaff',acid:'#b87333',crimson:'#ff5574',minimal:'#e7e7e7'};
   return m[theme]||'#48e8ff';
 }
 function highlightAccent(text,accent){
@@ -2664,4 +2683,4 @@ addEventListener('load', () => {
 });
 </script>
 </body>
-</html>
+  </html>
