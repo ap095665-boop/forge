@@ -571,8 +571,38 @@ input, select, textarea { color: var(--text); background: transparent; border: n
 .anim-neon_surge.text-animated .kinetic-headline { animation: surgeOnce 1.2s ease-in-out forwards; }
 @keyframes surgeOnce { 0% { opacity: .2; filter: none; } 18% { opacity: 1; filter: drop-shadow(0 0 35px var(--card-accent)); } 32% { opacity: .35; filter: none; } 50% { opacity: 1; filter: drop-shadow(0 0 30px var(--card-accent)); } 75% { opacity: .8; filter: drop-shadow(0 0 14px var(--card-accent-40)); } 100% { opacity: 1; filter: drop-shadow(0 0 24px var(--card-accent)); } }
 
-.anim-isometric_3d.text-animated .kinetic-body { transform-style: preserve-3d; animation: isoOnce 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes isoOnce { 0% { transform: perspective(800px) rotateX(32deg) rotateY(-24deg) translate3d(0, 26px, -40px); opacity: 0; } 100% { transform: perspective(800px) rotateX(15deg) rotateY(-10deg) translate3d(0, 0, 0); opacity: 1; } }
+/* JARVIS DIGITAL REVEAL — replaces the old 3D perspective animation.
+   No positional transform is applied, so settled text keeps the production
+   alignment exactly where the existing layout places it. */
+.anim-isometric_3d.text-animated .kinetic-headline .word-wrapper {
+  animation: jarvisWordIn 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--idx) * 75ms);
+  opacity: 0;
+  filter: blur(7px);
+  text-shadow: 0 0 18px var(--card-accent-40);
+}
+@keyframes jarvisWordIn {
+  0% { opacity: 0; filter: blur(7px); text-shadow: 0 0 22px var(--card-accent); }
+  42% { opacity: .82; filter: blur(1.5px); text-shadow: 0 0 14px var(--card-accent); }
+  68% { opacity: 1; filter: blur(0); text-shadow: 0 0 7px var(--card-accent-40); }
+  100% { opacity: 1; filter: blur(0); text-shadow: none; }
+}
+.anim-isometric_3d.text-animated .kinetic-body {
+  animation: jarvisBodyLock 0.9s ease-out forwards;
+}
+@keyframes jarvisBodyLock {
+  0%, 82% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-isometric_3d.text-animated .kinetic-headline .word-wrapper,
+  .anim-isometric_3d.text-animated .kinetic-body {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    text-shadow: none;
+  }
+}
 
 .anim-glitch_rgb.text-animated .kinetic-headline { animation: glitchOnce 0.9s steps(2, start) forwards; }
 @keyframes glitchOnce { 0% { opacity: 0; transform: translate3d(0,0,0); } 25% { opacity: 1; text-shadow: -4px 0 #ff1744, 4px 0 #00e5ff; transform: translate3d(3px,-1px,0); } 50% { text-shadow: 4px 0 #ff1744, -4px 0 #00e5ff; transform: translate3d(-3px,2px,0); } 75% { text-shadow: -2px 0 #ff1744, 2px 0 #00e5ff; transform: translate3d(1px,-1px,0); } 100% { text-shadow: none; transform: translate3d(0,0,0); opacity: 1; } }
@@ -1103,7 +1133,7 @@ REMAINS FOREVER</textarea></div>
           <option value="stagger_pop">Staggered Word Pop</option>
           <option value="neon_surge">Neon Surge &amp; Flicker</option>
           <option value="cyber_scramble">Cyber Scramble</option>
-          <option value="isometric_3d">3D Perspective Depth</option>
+          <option value="isometric_3d">JARVIS Digital Reveal</option>
           <option value="glitch_rgb">RGB Separation Glitch</option>
           <option value="minimal_drift">Brutalist Precision Drift</option>
         </select>
